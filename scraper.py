@@ -35,14 +35,14 @@ def  look_for_names(file, report):
     return results
     
     with open(test1, 'r') as f:
-    list_of_names = []
-    for line in f:
-        line = line.strip()
-        if re.match('REPORT OF', line):
-            print(line)
-            report = line
-        if line.strip().find('Name') == 0:
-            list_of_names.append(look_for_names(f, report))
-            
-    
-    print(list_of_names)
+        list_of_names = []
+        for line in f:
+            line = line.strip()
+            if re.match('REPORT OF', line):
+                print(line)
+                report = line
+            if line.strip().find('Name') == 0:
+                list_of_names.append(look_for_names(f, report))
+
+
+        print(list_of_names)
