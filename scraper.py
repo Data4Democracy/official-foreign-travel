@@ -4,7 +4,7 @@ import sys
 
 def get_lines(file, include_table_header=False, print_debug_lines=False):
     start_line = '-{107}\\\\2\\\\-{23}\\\\2\\\\'
-    end_line= r' +-+'
+    end_line= r'^ *-+$'
     end_line2 = '                                                                                                                 0                                                                             0'
     header_search_string = 'REPORT OF EXPENDITURES FOR OFFICIAL'
     lines = []
@@ -26,8 +26,14 @@ def get_lines(file, include_table_header=False, print_debug_lines=False):
         elif record_lines:
             if re.search(r'^ *[[.*]] *$', line):
                 continue
+            elif re.search(r'Please Note:', line):
+                continue
+            elif re.search(r'Commercial (Airfare|Aircraft|Transportation)', line,re.IGNORECASE):
+                continue
             else:
                 values = get_columns(line, year)
+                if(len(values) == 0):
+                    continue
                 if(values[0] == ''):
                     values[0] = current_name
                 else:
@@ -53,10 +59,20 @@ def get_columns(line, year):
     items = []
     name = clean_cell(line[0:39])
     items.append(name)
-    arrival_date = clean_cell(line[43:48]) + '/' + year
+
+    arrival_date = clean_cell(line[43:48])
+    if arrival_date == '':
+        return []
+    arrival_date += '/' + year
+
+    departure_date = clean_cell(line[55:60])
+    if departure_date == '':
+        return []
+    departure_date += '/' + year
+
     items.append(arrival_date)
-    departure_date = clean_cell(line[55:59]) + '/' + year
     items.append(departure_date)
+    
     country = clean_cell(line[63:88])
     items.append(country)
     per_diem = clean_cell(line[103:114], default='0.00')
@@ -66,6 +82,17 @@ def get_columns(line, year):
     other = clean_cell(line[155:166], default='0.00')
     items.append(other)
     return items
+
+def write_header_line(out_file):
+    items = ['name',
+             'arrival_date',
+             'departure_date',
+             'country',
+             'per diem',
+             'transportation',
+             'other',
+             'source_file']
+    print(','.join(['"' + c + '"' for c in items]),file=out_file)
 
 def process_a_file(file_name):
     """Processes a file returns rows through yield to make it iterable."""
@@ -82,6 +109,7 @@ def write_to_a_file(src_file, dest_file):
 def write_many_to_one(src_dir, output_filename):
     """Writes all of the reports from src_dir into output_filename"""
     with open(output_filename, 'w') as outfile:
+        write_header_line(outfile)
         for src_file_name in os.listdir(src_dir):
             src_file_path = src_dir + src_file_name
             for line in process_a_file(src_file_path):
