@@ -2,7 +2,7 @@ import re
 import os
 import sys
 
-def get_lines(file, include_table_header=False, print_debug_lines=False):
+def get_lines(file, include_table_header=True, print_debug_lines=False):
     start_line = '-{107}\\\\2\\\\-{23}\\\\2\\\\'
     end_line= r'^ *-+$'
     end_line2 = '                                                                                                                 0                                                                             0'
@@ -91,6 +91,7 @@ def write_header_line(out_file):
              'per diem',
              'transportation',
              'other',
+             'table_header',
              'source_file']
     print(','.join(['"' + c + '"' for c in items]),file=out_file)
 
