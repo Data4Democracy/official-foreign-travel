@@ -2,10 +2,10 @@ import re
 import os
 import sys
 
-def get_lines(file):
+def get_lines(file, include_table_header=True, print_debug_lines=False):
     start_line = '-{107}\\\\2\\\\-{23}\\\\2\\\\'
-    end_line = '                                                                                         -------------------------------------------------------------------------------------------------------'
-    end_line = r' {89}-{103}'
+    end_line= r'^ *-+$'
+    end_line2 = '                                                                                                                 0                                                                             0'
     header_search_string = 'REPORT OF EXPENDITURES FOR OFFICIAL'
     lines = []
     record_lines = False
@@ -21,16 +21,31 @@ def get_lines(file):
             record_lines = True
         elif re.search(end_line, line):
             record_lines = False
-        elif record_lines:            
-            values = get_columns(line, year)
-            if(values[0] == ''):
-                values[0] = current_name
+        elif re.search(end_line2, line):
+            record_lines = False
+        elif record_lines:
+            if re.search(r'^ *[[.*]] *$', line):
+                continue
+            elif re.search(r'Please Note:', line):
+                continue
+            elif re.search(r'Commercial (Airfare|Aircraft|Transportation)', line,re.IGNORECASE):
+                continue
             else:
-                current_name = values[0]
-            values.append(header_line.strip())
-            lines.append(values)
-    return lines
-
+                values = get_columns(line, year)
+                if(len(values) == 0):
+                    continue
+                if(values[0] == ''):
+                    values[0] = current_name
+                else:
+                    current_name = values[0]
+                if include_table_header:
+                    values.append(header_line.strip())
+                yield values
+        else:
+            continue
+        if print_debug_lines:
+            print(line)
+    
 def clean_cell(value, default=''):
     """Removes trailing periods and strips leading and trailing whitespace."""
     value = re.sub(r'\.+$','', value).strip()
@@ -44,10 +59,20 @@ def get_columns(line, year):
     items = []
     name = clean_cell(line[0:39])
     items.append(name)
-    arrival_date = clean_cell(line[43:48]) + '/' + year
+
+    arrival_date = clean_cell(line[43:48])
+    if arrival_date == '':
+        return []
+    arrival_date += '/' + year
+
+    departure_date = clean_cell(line[55:60])
+    if departure_date == '':
+        return []
+    departure_date += '/' + year
+
     items.append(arrival_date)
-    departure_date = clean_cell(line[55:59]) + '/' + year
     items.append(departure_date)
+    
     country = clean_cell(line[63:88])
     items.append(country)
     per_diem = clean_cell(line[103:114], default='0.00')
@@ -58,11 +83,23 @@ def get_columns(line, year):
     items.append(other)
     return items
 
+def write_header_line(out_file):
+    items = ['name',
+             'arrival_date',
+             'departure_date',
+             'country',
+             'per diem',
+             'transportation',
+             'other',
+             'table_header',
+             'source_file']
+    print(','.join(['"' + c + '"' for c in items]),file=out_file)
+
 def process_a_file(file_name):
     """Processes a file returns rows through yield to make it iterable."""
     with open(file_name, 'r') as f:
         for line in get_lines(f):
-            yield ','.join(line)
+            yield ','.join([ '"' + c + '"' for c in line])
 
 def write_to_a_file(src_file, dest_file):
     """Writes one report to a file."""
@@ -73,10 +110,11 @@ def write_to_a_file(src_file, dest_file):
 def write_many_to_one(src_dir, output_filename):
     """Writes all of the reports from src_dir into output_filename"""
     with open(output_filename, 'w') as outfile:
+        write_header_line(outfile)
         for src_file_name in os.listdir(src_dir):
             src_file_path = src_dir + src_file_name
             for line in process_a_file(src_file_path):
-                print(line + ',' + src_file_name, file=outfile)
+                print(line + ',"' + src_file_name + '"', file=outfile)
 
 # process_a_file('expenditures/2017q1jan09.txt')
 # process_a_file('expenditures/2014q2apr07.txt')
@@ -87,7 +125,7 @@ def print_help():
     sys.exit()
 
 if __name__ == "__main__":
-    if len(sys.argv) != 3:
+    if len(sys.argv) != 3 and len(sys.argv) != 4:
         print_help()
     write_many_to_one(sys.argv[1], sys.argv[2])
         
