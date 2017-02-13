@@ -60,8 +60,7 @@ def get_lines(file, year, include_table_header=True, print_debug_lines=False):
 
 def clean_cell(value, default=''):
     """Removes repeated periods, trailing periods and strips leading and trailing whitespace."""
-    value = re.sub('\.\.','', value).strip()
-    value = re.sub(r'\.+$','', value).strip()
+    value = re.sub(r'\.+$','', value.strip()).strip()
     if value == '':
         return default
     else:
