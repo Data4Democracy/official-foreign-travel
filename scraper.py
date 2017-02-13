@@ -59,8 +59,8 @@ def get_lines(file, year, include_table_header=True, print_debug_lines=False):
             continue
 
 def clean_cell(value, default=''):
-    """Removes trailing periods and strips leading and trailing whitespace."""
-    value = re.sub(r'\.+$','', value).strip()
+    """Removes repeated periods, trailing periods and strips leading and trailing whitespace."""
+    value = re.sub(r'\.+$','', value.strip()).strip()
     if value == '':
         return default
     else:
@@ -91,6 +91,7 @@ def get_columns(line, year):
     # Get the country
     country = clean_cell(line[63:88])
     items.append(country)
+
     return items
 
 def write_header_line(out_file):
@@ -100,7 +101,7 @@ def write_header_line(out_file):
              'country',
              'table_header',
              'source_file']
-    print(','.join(['"' + c + '"' for c in items]),file=out_file)
+    print(','.join(['"' + c + '"' for c in items]), file=out_file)
 
 def process_a_file(file_name):
     """Processes a file returns rows through yield to make it iterable."""
@@ -133,4 +134,3 @@ if __name__ == "__main__":
     if len(sys.argv) != 3:
         print_help()
     write_many_to_one(sys.argv[1], sys.argv[2])
-        
