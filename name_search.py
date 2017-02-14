@@ -13,6 +13,7 @@ df.loc[(df['name'].notnull()) & (df['name'].str.contains('Hon')) & (df['name'].s
 pd.to_datetime(df['arrival_date'], errors='coerce').isnull()
 1408                        Hon. Dave Reichert    2/29/2007       2/9/2007   
 * how to deal with names with -?
+* how to map names like first:John middle: Alexander, III, last: McMillan
 
 https://raw.githubusercontent.com/unitedstates/congress-legislators/master/legislators-current.yaml
 https://raw.githubusercontent.com/unitedstates/congress-legislators/master/legislators-historical.yaml
@@ -120,7 +121,7 @@ def append_data(members_index, members_list):
                     members_index[(year, month)][last_lower] = {}
                 members_index[(year, month)][last_lower][member_bioguide] = member_tuple
 
-def name_search(name, arrival_date, departure_date, members_index, charset = None, word_count = 3):
+def search_by_name(name, arrival_date, departure_date, members_index, charset = None, word_count = 3):
     """
     dates are assumed to be in m/d/yyyy format, and arrival<=departure
     the algorithm does the following preprocessing:
