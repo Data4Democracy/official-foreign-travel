@@ -24,6 +24,7 @@ https://raw.githubusercontent.com/unitedstates/congress-legislators/master/legis
 
 import yaml
 import re
+from itertools import permutations
 
 def load_legislators(filename):
     with open(filename) as f:
@@ -46,10 +47,10 @@ def check_bioguide(members_list):
 def get_charset(\
         members_list, \
         firstname = True, \
-        middlename = False, \
+        middlename = True, \
         lastname = True, \
         suffix = True, \
-        nickname = False):
+        nickname = True):
     ret = set()
     for mb in members_list:
         for b,name in zip(\
@@ -77,13 +78,11 @@ def generate_bioguide_dict(members_list):
     ret = {}
     for member in members_list:
         bioguide = member['id']['bioguide']
-        # assert(bioguide not in ret)
         ret[bioguide] = member
     return ret
 
 def month_iterator(start_year, start_month, end_year, end_month):
     """ returns a (year,month) tuple, end inclusive """
-    assert((1<=start_month) and (start_month<=12))
     year, month = start_year, start_month
     while (year<end_year) or ((year==end_year) and (month<=end_month)):
         yield (year,month)
@@ -96,16 +95,15 @@ def append_data(members_index, members_list):
     """
     members_index 
            key: (year, month)
-         value: dict   key lastname_lower
-                     value dict bioguide -> \
-                             -> (first, mid, last, suffix, nickname, \
-                             first_lower, mid_lower, last_lower, suffix_lower, nickname_lower)
-    names converted to lower-case to make search easier
+         value: dict key: bioguide \
+                   value: (first, mid, last, suffix, nickname, \
+                           first_lower, mid_lower, last_lower, suffix_lower, nickname_lower)
+    names converted to lower-case, special symbol removed, to make search easier
     """
     for member in members_list:
         firstname, middlename, lastname, suffix, nickname = get_names(member['name'])
         first_lower, mid_lower, last_lower, suf_lower, nick_lower = [\
-                str.lower(nm) for nm in [firstname, middlename, lastname, suffix, nickname]]
+                lower_name(nm) for nm in [firstname, middlename, lastname, suffix, nickname]]
         member_tuple = (firstname, middlename, lastname, suffix, nickname, \
                 first_lower, mid_lower, last_lower, suf_lower, nick_lower)
         member_bioguide = member['id']['bioguide']
@@ -117,9 +115,78 @@ def append_data(members_index, members_list):
             for year,month in month_iterator(start_year, start_month, end_year, end_month):
                 if (year, month) not in members_index:
                     members_index[(year, month)] = {}
-                if last_lower not in members_index[(year, month)]:
-                    members_index[(year, month)][last_lower] = {}
-                members_index[(year, month)][last_lower][member_bioguide] = member_tuple
+                members_index[(year, month)][member_bioguide] = member_tuple
+
+def lower_name(s):
+    t = str.lower(s)
+    t = re.sub(r"[\-().`']", ' ', t)
+    t = re.sub(r'  +', ' ', t)
+    return t
+
+def word_score(s1, s2):
+    """
+    if the first letter of s1 and s2 does not match, return 0
+    otherwise calculate c --- the length of the longest common substring of
+    s1[1:] and s2[1:], and return (1+c)/max(|s1|,|s2|) 
+    """
+    if s1[0] != s2[0]:
+        return 0
+    len_s1 = len(s1)
+    len_s2 = len(s2)
+    scores = [[0]*len_s2 for _ in range(len_s1)]
+    # scores[i][j] is the best match of s1[1:i+1] and s2[1:j+1]
+    for j in range(1,len_s2):
+        for i in range(1,len_s1):
+            scores[i][j] = 0
+            if s1[i] == s2[j]: 
+                scores[i][j] = max(scores[i][j], scores[i-1][j-1]+1)
+            scores[i][j] = max(scores[i-1][j], scores[i][j-1], scores[i][j])
+    return (1.0+scores[-1][-1]) / max(len_s1,len_s2)
+
+def words_list_score(s1, s2):
+    """
+    if either s1 or s2 is empty return 0
+
+    s1 and s2 are strings of words separated by single spaces
+    returns s/max(|s1|,|s2|), where |s1| (and |s2|) are number
+    of words in |s1| (and in |s2|, resp.), and s is the word matching
+    that achieves the highest score
+    """
+    if (not s1.strip()) or (not s2.strip()):
+        return 0
+    ps = s1.strip().split(' ')
+    lp = len(ps)
+    ts = s2.strip().split(' ')
+    lt = len(ts)
+    scores = [[0.0]*(lt+1) for _ in range(lp+1)]
+    for i in range(1,lp+1):
+        for j in range(1,lt+1):
+            scores[i][j] = max(\
+                    scores[i-1][j], \
+                    scores[i][j-1], \
+                    scores[i-1][j-1]+word_score(ps[i-1],ts[j-1]))
+    return scores[-1][-1]/max(lt,lp)
+
+def name_match(names, target, weights = (0.8,0.4,2,0.2,1)):
+    """
+    names is a tuple in the order first, middle, last, suffix, nickname
+    target is a list of words
+    """
+    names_list = [(nm,w) for nm,w in zip(names,weights)]
+    score = 0
+    len_target = len(target)
+    for perm in permutations(names_list):
+        scores = [[0]*(len_target+1) for _ in range(5+1)]
+        for i in range(1,5+1):
+            for j in range(1,len_target+1):
+                tmp = [scores[i][j-1], scores[i-1][j]]
+                for jp in range(j):
+                    tmp.append(scores[i-1][jp] + \
+                            names_list[i-1][1] * words_list_score(\
+                            names_list[i-1][0], ' '.join(target[jp:j])))
+                scores[i][j] = max(tmp)
+        score = max(score, scores[-1][-1])
+    return score
 
 def search_by_name(name, arrival_date, departure_date, members_index, charset = None, word_count = 3):
     """
@@ -135,19 +202,31 @@ def search_by_name(name, arrival_date, departure_date, members_index, charset = 
     name = re.sub(r' +', ' ', name)
     if charset is not None:
         charset = set(c.lower() for c in charset)
-        name = re.sub(r'[^{0}]'.format(''.join(c for c in charset)), '', name)
+        if '-' in charset:
+            charset.remove('-')
+            charset.add('\-')
+        name = re.sub(r'[^{0}]'.format(''.join(c for c in charset)), ' ', name)
+        name = re.sub(r'  +', ' ', name)
     name = name.split(' ')
     arr_month, _, arr_year = [int(x) for x in arrival_date.split('/')]
     dep_month, _, dep_year = [int(x) for x in arrival_date.split('/')]
-    ret = []
+    ret = {}
     for year,month in month_iterator(arr_year, arr_month, dep_year, dep_month):
         if (year,month) in members_index:
-            for wl in range(1, word_count+1):
-                for i in range(0, len(name)-wl+1):
-                    sn = ' '.join(name[i:i+wl])
-                    if sn in members_index[(year,month)]:
-                        for bio in members_index[(year,month)][sn]:
-                            if bio not in ret:
-                                ret.append(bio)
-    return ret
+            for bio, member_tuple in members_index[(year,month)].items():
+                if bio not in ret:
+                    ret[bio] = name_match(member_tuple[-5:], name)
+    retlist = [(k,v) for k,v in ret.items()]
+    retlist = sorted(retlist, key=lambda x:-x[1])
+    return retlist
+
+def initialize():
+    lcur = load_legislators('legislators-current.yaml')
+    lhis = load_legislators('legislators-historical.yaml')
+    members_list = lcur+lhis
+    charset = get_charset(members_list)
+    members_dict = generate_bioguide_dict(members_list)
+    members_index = {}
+    append_data(members_index, members_list)
+    return charset, members_list, members_dict, members_index
 
