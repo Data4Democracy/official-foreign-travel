@@ -14,17 +14,22 @@ pd.to_datetime(df['arrival_date'], errors='coerce').isnull()
 1408                        Hon. Dave Reichert    2/29/2007       2/9/2007   
 * how to deal with names with -?
 * how to map names like first:John middle: Alexander, III, last: McMillan
+* JoAnn Emerson vs. Jo Ann Emerson
 
 https://raw.githubusercontent.com/unitedstates/congress-legislators/master/legislators-current.yaml
 https://raw.githubusercontent.com/unitedstates/congress-legislators/master/legislators-historical.yaml
 ? https://raw.githubusercontent.com/unitedstates/congress-legislators/master/executive.yaml
-"""
 
-# TODO number of words in a name
+TODO
+use python-levenshtein package
+filter by initials
+consecutive parts of names
+"""
 
 import yaml
 import re
 from itertools import permutations
+import Levenshtein
 
 def load_legislators(filename):
     with open(filename) as f:
@@ -57,7 +62,7 @@ def get_charset(\
                 [firstname, middlename, lastname, suffix, nickname], \
                 ['first', 'middle', 'last', 'suffix', 'nickname']):
             if (b) and (name in mb['name']):
-                ret = ret.union(set(mb['name'][name]))
+                ret = ret.union(set(lower_name(mb['name'][name])))
     return ret
 
 def get_names(name_dict):
@@ -71,7 +76,7 @@ def get_names(name_dict):
     if 'suffix' in name_dict:
         suffix = name_dict['suffix']
     if 'nickname' in name_dict:
-        suffix = name_dict['nickname']
+        nickname = name_dict['nickname']
     return firstname, middlename, lastname, suffix, nickname 
 
 def generate_bioguide_dict(members_list):
@@ -101,9 +106,11 @@ def append_data(members_index, members_list):
     names converted to lower-case, special symbol removed, to make search easier
     """
     for member in members_list:
-        firstname, middlename, lastname, suffix, nickname = get_names(member['name'])
+        firstname, middlename, lastname, suffix, nickname = \
+                get_names(member['name'])
         first_lower, mid_lower, last_lower, suf_lower, nick_lower = [\
-                lower_name(nm) for nm in [firstname, middlename, lastname, suffix, nickname]]
+                lower_name(nm) for nm in \
+                [firstname, middlename, lastname, suffix, nickname]]
         member_tuple = (firstname, middlename, lastname, suffix, nickname, \
                 first_lower, mid_lower, last_lower, suf_lower, nick_lower)
         member_bioguide = member['id']['bioguide']
@@ -119,9 +126,9 @@ def append_data(members_index, members_list):
 
 def lower_name(s):
     t = str.lower(s)
-    t = re.sub(r"[\-().`']", ' ', t)
+    t = re.sub(r"[\-(),.`']", ' ', t)
     t = re.sub(r'  +', ' ', t)
-    return t
+    return t.strip()
 
 def word_score(s1, s2):
     """
@@ -159,6 +166,7 @@ def words_list_score(s1, s2):
     ts = s2.strip().split(' ')
     lt = len(ts)
     scores = [[0.0]*(lt+1) for _ in range(lp+1)]
+    # word_score = Levenshtein.jaro_winkler
     for i in range(1,lp+1):
         for j in range(1,lt+1):
             scores[i][j] = max(\
@@ -167,7 +175,7 @@ def words_list_score(s1, s2):
                     scores[i-1][j-1]+word_score(ps[i-1],ts[j-1]))
     return scores[-1][-1]/max(lt,lp)
 
-def name_match(names, target, weights = (0.8,0.4,2,0.2,1)):
+def name_match(names, target, weights = (0.8,0.4,3,0.2,1)):
     """
     names is a tuple in the order first, middle, last, suffix, nickname
     target is a list of words
@@ -175,20 +183,28 @@ def name_match(names, target, weights = (0.8,0.4,2,0.2,1)):
     names_list = [(nm,w) for nm,w in zip(names,weights)]
     score = 0
     len_target = len(target)
-    for perm in permutations(names_list):
+    target_slices = [['']*(len_target+1) for _ in range(len_target)]
+    for jp in range(len_target):
+        for j in range(jp+1, len_target+1):
+            if j == jp+1:
+                target_slices[jp][j] = target[jp]
+            else:
+                target_slices[jp][j] = target_slices[jp][j-1] + ' ' + target[j-1]
+    for perm in permutations(range(len(names_list))):
         scores = [[0]*(len_target+1) for _ in range(5+1)]
         for i in range(1,5+1):
             for j in range(1,len_target+1):
                 tmp = [scores[i][j-1], scores[i-1][j]]
                 for jp in range(j):
                     tmp.append(scores[i-1][jp] + \
-                            names_list[i-1][1] * words_list_score(\
-                            names_list[i-1][0], ' '.join(target[jp:j])))
+                            names_list[perm[i-1]][1] * words_list_score(\
+                            names_list[perm[i-1]][0],  target_slices[jp][j]))
                 scores[i][j] = max(tmp)
         score = max(score, scores[-1][-1])
     return score
 
-def search_by_name(name, arrival_date, departure_date, members_index, charset = None, word_count = 3):
+def search_by_name(name, arrival_date, departure_date, \
+        members_index, charset = None, return_length = 5):
     """
     dates are assumed to be in m/d/yyyy format, and arrival<=departure
     the algorithm does the following preprocessing:
@@ -215,10 +231,15 @@ def search_by_name(name, arrival_date, departure_date, members_index, charset = 
         if (year,month) in members_index:
             for bio, member_tuple in members_index[(year,month)].items():
                 if bio not in ret:
-                    ret[bio] = name_match(member_tuple[-5:], name)
+                    initials = set()
+                    for s in member_tuple[-5:]:
+                        if s:
+                            initials = initials.union(set([t[0] for t in s.split(' ')]))
+                    name_f = [nm for nm in name if nm[0] in initials]
+                    ret[bio] = name_match(member_tuple[-5:], name_f)
     retlist = [(k,v) for k,v in ret.items()]
     retlist = sorted(retlist, key=lambda x:-x[1])
-    return retlist
+    return retlist[:return_length]
 
 def initialize():
     lcur = load_legislators('legislators-current.yaml')
