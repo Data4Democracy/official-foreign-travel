@@ -12,9 +12,9 @@ df.loc[(df['name'].notnull()) & (df['name'].str.contains('Hon')) & (df['name'].s
 * currently some dates are not parsed correctly
 pd.to_datetime(df['arrival_date'], errors='coerce').isnull()
 1408                        Hon. Dave Reichert    2/29/2007       2/9/2007   
-* how to deal with names with -?
 * how to map names like first:John middle: Alexander, III, last: McMillan
 * JoAnn Emerson vs. Jo Ann Emerson
+* known issue with removing '-': Hon. Jackson-Lee, returns Jesse L. Jackson Jr. as top
 
 https://raw.githubusercontent.com/unitedstates/congress-legislators/master/legislators-current.yaml
 https://raw.githubusercontent.com/unitedstates/congress-legislators/master/legislators-historical.yaml
@@ -29,7 +29,8 @@ consecutive parts of names
 import yaml
 import re
 from itertools import permutations
-import Levenshtein
+import unicodedata
+# import Levenshtein
 
 def load_legislators(filename):
     with open(filename) as f:
@@ -56,6 +57,7 @@ def get_charset(\
         lastname = True, \
         suffix = True, \
         nickname = True):
+    """ don't use this, replace accents with ascii instead """
     ret = set()
     for mb in members_list:
         for b,name in zip(\
@@ -128,7 +130,7 @@ def lower_name(s):
     t = str.lower(s)
     t = re.sub(r"[\-(),.`']", ' ', t)
     t = re.sub(r'  +', ' ', t)
-    return t.strip()
+    return unicodedata.normalize('NFKD',t.strip()).encode('ascii','ignore').decode()
 
 def word_score(s1, s2):
     """
@@ -175,7 +177,7 @@ def words_list_score(s1, s2):
                     scores[i-1][j-1]+word_score(ps[i-1],ts[j-1]))
     return scores[-1][-1]/max(lt,lp)
 
-def name_match(names, target, weights = (0.8,0.4,3,0.2,1)):
+def name_match(names, target, weights = (0.8,0.4,4,0.2,1)):
     """
     names is a tuple in the order first, middle, last, suffix, nickname
     target is a list of words
@@ -214,7 +216,7 @@ def search_by_name(name, arrival_date, departure_date, \
     sequence of up to word_count words to see if there is a matching last name
     returns a list of bioguide-id of all lastname in members_index that appears in name
     """
-    name = name.lower()
+    name = unicodedata.normalize('NFKD',name.lower()).encode('ascii','ignore').decode()
     name = re.sub(r' +', ' ', name)
     if charset is not None:
         charset = set(c.lower() for c in charset)
@@ -222,7 +224,10 @@ def search_by_name(name, arrival_date, departure_date, \
             charset.remove('-')
             charset.add('\-')
         name = re.sub(r'[^{0}]'.format(''.join(c for c in charset)), ' ', name)
-        name = re.sub(r'  +', ' ', name)
+    else:
+        name = re.sub(r'[^ a-zA-z]', ' ', name)
+    name = re.sub(r'  +', ' ', name)
+    name = name.strip()
     name = name.split(' ')
     arr_month, _, arr_year = [int(x) for x in arrival_date.split('/')]
     dep_month, _, dep_year = [int(x) for x in arrival_date.split('/')]
@@ -250,4 +255,13 @@ def initialize():
     members_index = {}
     append_data(members_index, members_list)
     return charset, members_list, members_dict, members_index
+
+def get_name_by_bioguide(bio, members_dict):
+    try:
+        if isinstance(bio, str):
+            return members_dict[bio]['name']
+        elif isinstance(bio, list):
+            return [members_dict[b]['name'] for b in bio]
+    except KeyError:
+        return None
 
