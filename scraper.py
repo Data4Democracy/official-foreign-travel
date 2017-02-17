@@ -13,6 +13,7 @@ def skip_line(line):
             return True
     return False
 
+
 def end_line(line):
     patterns = [
         r'^ *-+$',
@@ -26,7 +27,7 @@ def end_line(line):
 def get_lines(file, year, include_table_header=True, print_debug_lines=False):
     print(year)
     start_line = '-{107}\\\\2\\\\-{23}\\\\2\\\\'
-    header_search_string = 'REPORT OF EXPENDITURES FOR OFFICIAL'
+    header_search_string = r'REPORTS? OF EXPENDITURES FOR '
     lines = []
     record_lines = False
     previous_line = ''
@@ -45,7 +46,13 @@ def get_lines(file, year, include_table_header=True, print_debug_lines=False):
             if skip_line(line):
                 continue
             else:
-                values = get_columns(line, year)
+                end_of_header_year = re.search(r'[0-9]{4}\.?$', header_line.strip())
+                myYear = year
+                if end_of_header_year:
+                    myYear = end_of_header_year.group(0)[0:4]
+                else:
+                    print(header_line)
+                values = get_columns(line, myYear)
                 if(len(values) == 0):
                     continue
                 if(values[0] == ''):
@@ -57,6 +64,13 @@ def get_lines(file, year, include_table_header=True, print_debug_lines=False):
                 yield values
         else:
             continue
+
+def get_honorific(nameValue):
+    b = re.match(r'^[a-zA-Z]{2,}\.', nameValue)
+    if b:
+        return b.group(0)
+    else:
+        return ''
 
 def clean_cell(value, default=''):
     """Removes repeated periods, trailing periods and strips leading and trailing whitespace."""
@@ -74,10 +88,14 @@ def get_columns(line, year):
     name = clean_cell(line[0:39])
     items.append(name)
 
+    honorific = get_honorific(name)
+    items.append(honorific)
+
     # Get the arrival date
     arrival_date = clean_cell(line[43:48])
     if arrival_date == '':
         return []
+    
     arrival_date += '/' + year
     items.append(arrival_date)
 
@@ -96,6 +114,7 @@ def get_columns(line, year):
 
 def write_header_line(out_file):
     items = ['name',
+             'honorific',
              'arrival_date',
              'departure_date',
              'country',
@@ -125,6 +144,13 @@ def write_many_to_one(src_dir, output_filename):
             for line in process_a_file(src_file_path):
                 print(line + ',"' + src_file_name + '"', file=outfile)
 
+def write_many_to_many(src_dir, out_dir):
+    """Processes each file and outputs to a file with the same name in the out_directory"""
+    for src_file_name in os.listdir(src_dir):
+        src_file_path = src_dir + src_file_name
+        out_file_path = out_dir + src_file_name
+        write_to_a_file(src_file_path, out_file_path)
+
 def print_help():
     """Prints a simply help doc, and then exits the program."""
     print('usage: {source directory} {output filename}')
@@ -133,4 +159,11 @@ def print_help():
 if __name__ == "__main__":
     if len(sys.argv) != 3:
         print_help()
-    write_many_to_one(sys.argv[1], sys.argv[2])
+    origin = sys.argv[1]
+    dest = sys.argv[2]
+    if os.path.isdir(origin) and os.path.isdir(dest):
+        write_many_to_many(sys.argv[1], sys.argv[2])
+    elif os.path.isdir(origin):
+        write_many_to_one(origin, dest)
+    else:
+        write_to_a_file(origin,dest)
