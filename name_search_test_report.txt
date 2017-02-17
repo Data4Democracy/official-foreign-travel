@@ -1,0 +1,966 @@
+Took about 7 hours to run through all files. 
+Some simple measures to speed up the search: 
+* cache past search results
+* identify common titles and remove them before search
+* restrict the patterns tried by search_by_name
+
+In the following test, we use the scraper to go through all reports and search for names that starts with 'Hon' or 'Speaker', did try 'HON' or other prefix. It is possible that members were given other titles. A full search will take a lot more time.
+
+The criteria for a unique match is: (i) score at least 3, AND (ii) score of first 10% higher than score of second. 
+The first requirement may be a bit loose, given that a full lastname match gives a score of 4. The second might be a bit too strict.
+
+If (i) is not fulfilled, the line is labeled as 'Missing'. If (i) holds but not (ii), it is labeled as 'Inconclusive'. If there is an exception, mostly likely due to issues with line parsing, it is labeled 'ERROR'.
+
+Of the non-errors, the following are the most common:
+1. Retired legislators travelling
+2. Staff or other officials
+3. Two Mike Rogers serving at the same time
+4. For members in the report whose firstname is Paul (and maybe lastname starts with R), Ron Paul scores high.
+5. Patrick Joseph Kennedy II vs. Joseph Patrick Kennedy III
+Other causes include non-standard date format and incomplete records in the database of the legislators.
+
+Details
+=======
+
+Issues occuring multiple times are consolidated.
+
+Inconcl. 2007q3sep04.txt: "Hon. Paul Gilmore","5/25/2007","5/30/2007","Portugal","REPORT OF EXPENDITURES FOR OFFICIAL FOREIGN TRAVEL, DELEGATION TO NATO PARLIAMENTARY ASSEMBLY SPRING MEETING IN MADEIRA, PORTUGAL FOLLOWED BY BILATERAL MEETINGS IN LISBON, PORTUGAL, TUNIS,", [('G000210', 4.228571428571429), ('P000583', 4.0), ('G000550', 2.6857142857142855), ('H001043', 2.4000000000000004), ('H001034', 2.4)]
+Reason: second highest is Ron Paul, counted as a lastname match
+
+Inconcl. 2004q1mar03.txt: "Hon. Wilson Livingood","1/3/2004","1/6/2004","Brazil","REPORT OF EXPENDITURES FOR OFFICIAL FOREIGN TRAVEL, DELEGATION TO BRAZIL, URUGUAY, ARGENTINA AND CHILE, HOUSE OF REPRESENTATIVES, EXPENDED BETWEEN JAN. 3 AND JAN. 13, 2004", [('W000789', 4.114285714285714), ('W000795', 4.0), ('W000267', 2.6666666666666665), ('W000794', 2.6666666666666665), ('W000268', 2.6666666666666665)]
+Reason: Sergent at Arms, not legislator
+
+Inconcl. 2004q1mar03.txt: "Hon. Scott Palmer","1/7/2004","1/11/2004","Argentina","REPORT OF EXPENDITURES FOR OFFICIAL FOREIGN TRAVEL, DELEGATION TO BRAZIL, URUGUAY, ARGENTINA AND CHILE, HOUSE OF REPRESENTATIVES, EXPENDED BETWEEN JAN. 3 AND JAN. 13, 2004", [('S001157', 4.0), ('S000185', 4.0), ('H001034', 2.4), ('P000588', 2.4), ('P000034', 2.2857142857142856)]
+Reason: chief of staff for Hastert, not legislator
+
+Missing 2004q1mar03.txt: "Hon. Ted Van Der Meid","1/7/2004","1/11/2004","Argentina","REPORT OF EXPENDITURES FOR OFFICIAL FOREIGN TRAVEL, DELEGATION TO BRAZIL, URUGUAY, ARGENTINA AND CHILE, HOUSE OF REPRESENTATIVES, EXPENDED BETWEEN JAN. 3 AND JAN. 13, 2004", [('H001034', 2.9), ('H000666', 2.5), ('H000712', 2.2666666666666666), ('D000492', 2.1333333333333333), ('D000601', 2.1333333333333333)]
+Reason: staff for Hastert, not legislator
+
+ERROR 2009q2may21.txt: ['Hon. John Tanne', 'Chairman', '-3/2009'], invalid literal for int() with base 10: 'Chairman'
+ERROR 2009q2may21.txt: ['Hon. John Tanne', 'Chairman', '-4/2009'], invalid literal for int() with base 10: 'Chairman'
+ERROR 2009q2may21.txt: ['Hon. John Tanne', 'Chairman', '-6/2009'], invalid literal for int() with base 10: 'Chairman'
+ERROR 2009q2may21.txt: ['Hon. John Tanne', 'Chairman', '-7/2009'], invalid literal for int() with base 10: 'Chairman'
+ERROR 2009q2may21.txt: ['Hon. John Tanne', 'Chairman', '-8/2009'], invalid literal for int() with base 10: 'Chairman'
+ERROR 2009q2may21.txt: ['Hon. Jo Ann Emerson', '-3/2009', '-4/2009'], not enough values to unpack (expected 3, got 2)
+ERROR 2009q2may21.txt: ['Hon. Jo Ann Emerson', '-4/2009', '-6/2009'], not enough values to unpack (expected 3, got 2)
+ERROR 2009q2may21.txt: ['Hon. Jo Ann Emerson', '-6/2009', '-7/2009'], not enough values to unpack (expected 3, got 2)
+ERROR 2009q2may21.txt: ['Hon. Jo Ann Emerson', '-7/2009', '-8/2009'], not enough values to unpack (expected 3, got 2)
+ERROR 2009q2may21.txt: ['Hon. Jo Ann Emerson', '-8/2009', '-9/2009'], not enough values to unpack (expected 3, got 2)
+
+Inconcl. 2005q2jun09.txt: "Hon. Mike Rogers","3/19/2005","3/20/2005","Middle East","REPORT OF EXPENDITURES FOR OFFICIAL FOREIGN TRAVEL, SELECT COMMITTEE ON INTELLIGENCE, HOUSE OF REPRESENTATIVES, EXPENDED BETWEEN JAN. 1 AND MAR. 31, 2005", [('R000575', 4.8), ('R000572', 4.8), ('R000395', 4.333333333333333), ('H001034', 3.4), ('R000307', 2.857142857142857)]
+Reason: two highest are both "Mike Rogers", third is Harold Rogers
+
+ERROR 2000q3sep28.txt: ['Hon. John Conyer', 'Jr', '5/19/2000'], invalid literal for int() with base 10: 'Jr'
+ERROR 2000q3sep28.txt: ['Hon. F. James Sensenbrenne', 'Jr', '1/17/2000'], invalid literal for int() with base 10: 'Jr'
+ERROR 2000q3sep28.txt: ['Hon. F. James Sensenbrenne', 'Jr', '1/20/2000'], invalid literal for int() with base 10: 'Jr'
+ERROR 2000q3sep28.txt: ['Hon. F. James Sensenbrenne', 'Jr', '2/19/2000'], invalid literal for int() with base 10: 'Jr'
+ERROR 2000q3sep28.txt: ['Hon. F. James Sensenbrenne', 'Jr', '2/27/2000'], invalid literal for int() with base 10: 'Jr'
+
+Inconcl. 1998q3aug06.txt: "Hon. Patrick J. Kennedy","5/24/1998","5/27/1998","Armenia","REPORT OF EXPENDITURES FOR OFFICIAL FOREIGN TRAVEL, COMMITTEE ON NATIONAL SECURITY, HOUSE OF REPRESENTATIVES, EXPENDED BETWEEN APR. 1 AND JUNE 30, 1998", [('K000113', 4.866666666666667), ('K000110', 4.533333333333333), ('K000105', 4.0), ('K000146', 3.0857142857142854), ('H000789', 3.0)]
+Reason: Highest is Patrick Joseph Kennedy, second is Joseph Patrick Kennedy II
+
+ERROR 1998q3aug06.txt: ['Hon. F. James Sensenbrenne', 'Jr', '4/5/1998'], invalid literal for int() with base 10: 'Jr'
+ERROR 2009q4nov06.txt: ['Hon. Marcia L. Fudge--Aug. 27-Sept. ', '', '8/27/2009'], invalid literal for int() with base 10: ''
+ERROR 2009q4nov06.txt: ['Hon. Marcia L. Fudge--Aug. 27-Sept. ', '', '8/30/2009'], invalid literal for int() with base 10: ''
+ERROR 2009q4nov06.txt: ['Hon. Marcia L. Fudge--Aug. 27-Sept. ', '', '9/2/2009'], invalid literal for int() with base 10: ''
+ERROR 2009q4nov06.txt: ['Hon. Marcia L. Fudge--Aug. 27-Sept. ', '', '9/3/2009'], invalid literal for int() with base 10: ''
+
+Inconcl. 2007q3sep06.txt: "Hon. Adam Smith","5/25/2007","5/26/2007","United Kingdom","REPORT OF EXPENDITURES FOR OFFICIAL FOREIGN TRAVEL, COMMITTEE ON ARMED SERVICES, HOUSE OF REPRESENTATIVES, EXPENDED BETWEEN APR. 1 AND JUNE 30, 2007", [('S000510', 4.8), ('S001172', 4.4), ('S000522', 4.133333333333334), ('S001142', 4.133333333333334), ('S000583', 4.0)]
+Inconcl. 2007q3sep06.txt: "Hon. Adrian Smith","4/6/2007","4/7/2007","Kuwait","REPORT OF EXPENDITURES FOR OFFICIAL FOREIGN TRAVEL, COMMITTEE ON THE BUDGET, HOUSE OF REPRESENTATIVES, EXPENDED BETWEEN APR. 1 AND  JUNE 30, 2007", [('S001172', 4.8), ('S000510', 4.4), ('S000522', 4.133333333333334), ('S001142', 4.133333333333334), ('S000583', 4.0)]
+Reason: the two looked similar to the algorithm
+
+ERROR 2007q3sep06.txt: ['Hon. John Conyer', 'Jr', '4/2/2007'], invalid literal for int() with base 10: 'Jr'
+
+Inconcl. 2007q3sep06.txt: "Hon. Michael Rogers","3/31/2007","4/2/2007","Africa","REPORT OF EXPENDITURES FOR OFFICIAL FOREIGN TRAVEL, PERMANENT SELECT COMMITTEE ON INTELLIGENCE, HOUSE OF REPRESENTATIVES, EXPENDED BETWEEN APR. 1 AND JUNE 30, 2007", [('R000575', 4.3428571428571425), ('R000572', 4.3428571428571425), ('R000395', 4.333333333333333), ('H001034', 3.2), ('M001167', 3.16)]
+Reason: two highest are both "Mike Rogers"
+
+Inconcl. 2005q2may16.txt: "Hon. Paul Ryan","4/22/2005","4/24/2005","Italy","REPORT OF EXPENDITURES FOR OFFICIAL FOREIGN TRAVEL, DELEGATION TO ROME, ITALY, HOUSE OF REPRESENTATIVES, EXPENDED BETWEEN APR. 22 AND APR. 24, 2005", [('R000570', 4.8), ('P000583', 4.5), ('R000577', 4.0), ('R000566', 3.0), ('H001034', 2.4)]
+Reason: got confused with "Ron Paul", second highest
+
+Missing 2005q2may16.txt: "Hon. Stephanie Herseth","2/18/2005","2/22/2005","United Kingdom","REPORT OF EXPENDITURES FOR OFFICIAL FOREIGN TRAVEL, COMMITTEE ON AGRICULTURE, HOUSE OF REPRESENTATIVES, EXPENDED BETWEEN JAN. 1 AND MAR. 31, 2005.", [('H001037', 2.8), ('H001034', 2.4), ('H000323', 2.2857142857142856), ('H000528', 2.2857142857142856), ('S000822', 2.2222222222222223)]
+Reason: full lastname "Herseth Sandlin", so the score here was too low
+
+Inconcl. 2005q2may16.txt: "Hon. Mike Turner","1/7/2005","1/8/2005","Italy","REPORT OF EXPENDITURES FOR OFFICIAL FOREIGN TRAVEL, COMMITTEE ON ARMED SERVICES, HOUSE OF REPRESENTATIVES, EXPENDED BETWEEN JAN. 1 AND MAR. 31, 2005", [('T000463', 4.3428571428571425), ('T000424', 4.0), ('H001034', 3.4), ('T000250', 2.6666666666666665), ('T000038', 2.6666666666666665)]
+Reason: second highest "Jim Turner"
+
+ERROR 2005q2may16.txt: ['Hon. Frank Pallon', 'Jr', '1/9/2005'], invalid literal for int() with base 10: 'Jr'
+ERROR 2005q2may16.txt: ['Hon. Frank Pallon', 'Jr', '1/10/2005'], invalid literal for int() with base 10: 'Jr'
+ERROR 2005q2may16.txt: ['Hon. Frank Pallon', 'Jr', '1/12/2005'], invalid literal for int() with base 10: 'Jr'
+ERROR 2005q2may16.txt: ['Hon. F. James Sensenbrenne', 'Jr', '1/8/2005'], invalid literal for int() with base 10: 'Jr'
+ERROR 2005q2may16.txt: ['Hon. F. James Sensenbrenne', 'Jr', '1/13/2005'], invalid literal for int() with base 10: 'Jr'
+
+Inconcl. 2005q2may16.txt: "Hon. E.B. Johnson","2/18/2005","2/20/2005","Japan","REPORT OF EXPENDITURES FOR OFFICIAL FOREIGN TRAVEL, COMMITTEE ON TRANSPORTATION AND INFRASTRUCTURE, HOUSE OF REPRESENTATIVES, EXPENDED BETWEEN JAN. 1 AND MAR. 31, 2005", [('J000126', 4.217142857142857), ('J000177', 4.0), ('J000285', 4.0), ('J000174', 4.0), ('J000163', 4.0)]
+Reason: a few other Johnson scored high, maybe matching initials in first or middle name should get higher scores
+
+Missing 2005q2may16.txt: "Hon. Jim Coon","2/18/2005","2/20/2005","Japan","REPORT OF EXPENDITURES FOR OFFICIAL FOREIGN TRAVEL, COMMITTEE ON TRANSPORTATION AND INFRASTRUCTURE, HOUSE OF REPRESENTATIVES, EXPENDED BETWEEN JAN. 1 AND MAR. 31, 2005", [('C000754', 2.8), ('C001059', 2.4000000000000004), ('H001034', 2.4), ('C000191', 2.3200000000000003), ('C001056', 2.2)]
+Reason: staff director of the committee
+
+Missing 2005q2may16.txt: "Hon. Stacie Soumbeniotis","2/18/2005","2/20/2005","Japan","REPORT OF EXPENDITURES FOR OFFICIAL FOREIGN TRAVEL, COMMITTEE ON TRANSPORTATION AND INFRASTRUCTURE, HOUSE OF REPRESENTATIVES, EXPENDED BETWEEN JAN. 1 AND MAR. 31, 2005", [('H001034', 2.4), ('S000030', 2.2857142857142856), ('S000810', 2.1333333333333333), ('H000712', 2.0), ('H000874', 2.0)]
+Reason: staff of the committee
+
+Inconcl. 2005q2may16.txt: "Hon. Chris Kennedy","2/20/2005","2/22/2005","China","REPORT OF EXPENDITURES FOR OFFICIAL FOREIGN TRAVEL, COMMITTEE ON TRANSPORTATION AND INFRASTRUCTURE, HOUSE OF REPRESENTATIVES, EXPENDED BETWEEN JAN. 1 AND MAR. 31, 2005", [('K000358', 4.0), ('K000105', 4.0), ('K000113', 4.0), ('H001034', 2.4), ('C000858', 2.4)]
+Reason: not legislator (?)
+
+Inconcl. 2006q4dec05.txt: "Hon. David Pryce","7/1/2006","7/2/2006","Portugal","REPORT OF EXPENDITURES FOR OFFICIAL FOREIGN TRAVEL, DELEGATION TO PORTUGAL, CYPRUS, KENYA AND SENEGAL, HOUSE OF REPRESENTATIVES, EXPENDED BETWEEN JULY 1 AND JULY 9, 2006", [('P000555', 4.228571428571429), ('P000523', 4.0), ('D000603', 3.2), ('D000598', 3.2), ('D000114', 3.2)]
+Reason: highest is "Deborah Pryce", second highest "David Price"
+
+Inconcl. 2006q4dec05.txt: "Hon. Frank LoBoindo","4/8/2006","4/10/2006","Jordan","REPORT OF EXPENDITURES FOR OFFICIAL FOREIGN TRAVEL, COMMITTEE ON ARMED SERVICES, HOUSE OF REPRESENTATIVES, EXPENDED BETWEEN APR. 1 AND JUNE 30, 2006", [('L000554', 4.3), ('F000339', 4.0), ('F000448', 3.3333333333333335), ('H001034', 2.4), ('F000444', 2.4)]
+Reason: misspelling, should be 'LoBiondo'
+
+ERROR 2006q4dec05.txt: ['Hon. F. James Sensenbrenne', 'Jr', '4/09/2006'], invalid literal for int() with base 10: 'Jr'
+ERROR 2006q4dec05.txt: ['Hon. F. James Sensenbrenne', 'Jr', '4/23/2006'], invalid literal for int() with base 10: 'Jr'
+ERROR 2010q1jan26.txt: ['Hon. F. James Sensenbrenne', 'Jr', '12/17/2010'], invalid literal for int() with base 10: 'Jr'
+
+Missing 2010q1jan26.txt: "Hon. Brian Monahan","12/17/2010","12/19/2010","Denmark","REPORT OF EXPENDITURES FOR OFFICIAL FOREIGN TRAVEL, DELEGATION TO DENMARK, EXPENDED BETWEEN DEC. 7 AND DEC. 22, 2009", [('B000410', 2.933333333333333), ('H001034', 2.742857142857143), ('B001235', 2.7199999999999998), ('B001253', 2.6285714285714286), ('M000844', 2.58)]
+Reason: Attending Physician, not legislator
+
+ERROR 2003q1feb27.txt: ['Hon. Jim Kolb', 'Chairman', '5/16/2003'], invalid literal for int() with base 10: 'Chairman'
+
+Missing 2003q1feb27.txt: "Hon. Benjamin Gilman","10/10/2003","10/15/2003","Colombia","", [('B000468', 2.5), ('H001034', 2.4), ('G000210', 2.2857142857142856), ('B000410', 2.2666666666666666), ('B000382', 2.0)]
+Reason: not legislator at time of travel
+
+Inconcl. 2003q1feb27.txt: "Hon. JoAnn Davis","12/11/2003","12/14/2003","England","", [('D000114', 4.32), ('D000597', 4.16), ('D000598', 4.0), ('D000096', 4.0), ('D000599', 4.0)]
+Reason: first is 'Jim Davis', second is 'Jo Ann Davis', followed by other Davis
+
+Missing 2003q1feb27.txt: "Hon. Brian Kerns","10/11/2003","10/15/2003","Colombia","", [('B000410', 2.933333333333333), ('B000755', 2.88), ('B001235', 2.7199999999999998), ('H001034', 2.4), ('B001227', 2.4)]
+Reason: not legislator at time of travel
+
+Missing 2003q1feb27.txt: "Hon. Cynthia McKinney","10/18/2003","10/19/2003","Amsterdam","", [('H001034', 2.775), ('M000485', 2.5), ('M000477', 2.5), ('M000087', 2.342857142857143), ('M000508', 2.2666666666666666)]
+Reason: not legislator at time of travel
+
+Inconcl. 2004q3sep13.txt: "Hon. Kay King","5/22/2004","5/23/2004","France","REPORT OF EXPENDITURES FOR OFFICIAL FOREIGN TRAVEL, DELEGATION TO THE NATO PARLIAMENTARY ASSEMBLY MEETING, HOUSE OF REPRESENTATIVES, EXPENDED BETWEEN MAY 22 AND JUNE 2, 2004", [('K000362', 4.0), ('K000210', 4.0), ('K000188', 3.0), ('K000352', 2.6666666666666665), ('H001034', 2.4)]
+Reason: problably not legislator
+
+Missing 2004q1jan23.txt: "Hon. Johnny Amaral","11/7/2004","11/11/2004","Portugal","REPORT OF EXPENDITURES FOR OFFICIAL FOREIGN TRAVEL, DELEGATION TO LAJES FIELD, AZORES AND PORTUGAL, HOUSE OF REPRESENTATIVES, EXPENDED BETWEEN NOV. 7 AND NOV. 11, 2003", [('J000177', 2.857142857142857), ('J000285', 2.857142857142857), ('J000174', 2.857142857142857), ('J000163', 2.857142857142857), ('J000126', 2.857142857142857)]
+Reason: staff
+
+Missing 2004q1jan23.txt: "Hon. Jennifer Buckley","11/7/2004","11/11/2004","Portugal","REPORT OF EXPENDITURES FOR OFFICIAL FOREIGN TRAVEL, DELEGATION TO LAJES FIELD, AZORES AND PORTUGAL, HOUSE OF REPRESENTATIVES, EXPENDED BETWEEN NOV. 7 AND NOV. 11, 2003", [('B001231', 2.857142857142857), ('B001246', 2.4857142857142858), ('H001034', 2.4), ('B000657', 2.2857142857142856), ('J000082', 2.2857142857142856)]
+Reason: staff
+
+Missing 2004q1jan23.txt: "Hon. Doug Bereuter","11/30/2004","12/1/2004","Germany","REPORT OF EXPENDITURES FOR OFFICIAL FOREIGN TRAVEL, DELEGATION TO THE HOUSE NATO PARLIAMENTARY ASSEMBLY, HOUSE OF REPRESENTATIVES, EXPENDED BETWEEN NOV. 30 AND DEC. 5, 2003", [('H001034', 2.4), ('H000666', 2.25), ('D000432', 2.2), ('D000601', 2.1333333333333333), ('H001032', 2.1)]
+Reason: not legislator at time of travel
+
+ERROR 2005q4nov17.txt: ['Hon. Don Manzull', 'Chairman', '9/30/2005'], invalid literal for int() with base 10: 'Chairman'
+ERROR 2005q4nov17.txt: ['Hon. Robert E. Crame', 'r', '7/30/2005'], invalid literal for int() with base 10: 'r'
+ERROR 2005q4nov17.txt: ['Hon. Robert E. Crame', 'r', '8/1/2005'], invalid literal for int() with base 10: 'r'
+ERROR 2005q4nov17.txt: ['Hon. Robert E. Crame', 'r', '8/5/2005'], invalid literal for int() with base 10: 'r'
+
+Inconcl. 2005q4nov17.txt: "Hon. Frank LoBionbo","8/22/2005","8/23/2005","United Kingdom","REPORT OF EXPENDITURES FOR OFFICIAL FOREIGN TRAVEL, COMMITTEE ON ARMED SERVICES, HOUSE OF REPRESENTATIVES, EXPENDED BETWEEN  JULY 1 AND SEPT. 30, 2005", [('L000554', 4.3), ('F000339', 4.0), ('F000448', 3.3333333333333335), ('H001034', 2.4), ('F000444', 2.4)]
+Reason: wrong spelling
+
+ERROR 2009q2apr02.txt: ['Hon. Nancy Pelos', 'Speaker', '2/14/2009'], invalid literal for int() with base 10: 'Speaker'
+ERROR 2009q2apr02.txt: ['Hon. William Pascrel', 'Jr', '2/14/2009'], invalid literal for int() with base 10: 'Jr'
+ERROR 2009q2apr02.txt: ['Hon. Nancy Pelos', 'Speaker', '2/20/2009'], invalid literal for int() with base 10: 'Speaker'
+ERROR 2009q2apr02.txt: ['Hon. William Pascrel', 'Jr', '2/20/2009'], invalid literal for int() with base 10: 'Jr'
+
+Inconcl. 1997q1feb06.txt: "Hon. Tom Bevill","3/31/1997","3/31/1997","Panama","REPORT OF EXPENDITURES FOR OFFICIAL FOREIGN TRAVEL, COMMITTEE ON APPROPRIATIONS, HOUSE OF REPRESENTATIVES, EXPENDED BETWEEN APR. 1 AND JUNE 30, 1996", [('H000789', 3.0), ('B000556', 2.8), ('T000188', 2.6666666666666665), ('B000617', 2.605714285714286), ('H000712', 2.533333333333333)]
+Reason: not legislator at time of travel
+
+Inconcl. 1997q1feb06.txt: "Hon. Charles Wilson","3/31/1997","4/2/1997","England","REPORT OF EXPENDITURES FOR OFFICIAL FOREIGN TRAVEL, COMMITTEE ON APPROPRIATIONS, HOUSE OF REPRESENTATIVES, EXPENDED BETWEEN APR. 1 AND JUNE 30, 1996", [('H000789', 3.0), ('W000268', 2.952380952380952), ('W000267', 2.6666666666666665), ('C000269', 2.3428571428571425), ('C000059', 2.2857142857142856)]
+Reason: not legislator at time of travel
+
+Inconcl. 1997q1feb06.txt: "Hon. Carlos J. Moorhead","3/31/1997","3/31/1997","Panama","REPORT OF EXPENDITURES FOR OFFICIAL FOREIGN TRAVEL, COMMITTEE ON THE JUDICIARY, HOUSE OF REPRESENTATIVES, EXPENDED BETWEEN MAR. 31 AND JUNE 30, 1996", [('H000789', 3.0), ('C000191', 2.8766666666666665), ('M000941', 2.7666666666666666), ('M000844', 2.5), ('C000266', 2.4)]
+Reason: not legislator at time of travel
+
+Inconcl. 1997q1feb06.txt: "Hon. Harry Johnston","9/14/1997","9/16/1997","Kenya","REPORT OF EXPENDITURES FOR OFFICIAL FOREIGN TRAVEL, COMMITTEE ON INTERNATIONAL RELATIONS, HOUSE OF REPRESENTATIVES, EXPENDED BETWEEN JULY 1 AND SEPT. 30, 1996", [('J000174', 3.5), ('J000149', 3.5), ('J000163', 3.5), ('J000126', 3.5), ('J000177', 3.5)]
+Reason: not legislator at time of travel
+
+Inconcl. 1997q1feb06.txt: "Hon. Robert K. Dornan","7/13/1997","7/14/1997","United Kingdom","REPORT OF EXPENDITURES FOR OFFICIAL FOREIGN TRAVEL, COMMITTEE ON NATIONAL SECURITY, HOUSE OF REPRESENTATIVES, EXPENDED BETWEEN JULY 1 AND SEPTEMBER 30, 1996", [('R000307', 3.4285714285714284), ('D000432', 3.3333333333333335), ('H000789', 3.0), ('R000395', 3.0), ('R000385', 2.6666666666666665)]
+Reason: not legislator at time of travel
+
+Inconcl. 1997q1feb06.txt: "Hon. Pete Peterson","9/14/1997","9/14/1997","Kenya","REPORT OF EXPENDITURES FOR OFFICIAL FOREIGN TRAVEL, COMMITTEE ON NATIONAL SECURITY, HOUSE OF REPRESENTATIVES, EXPENDED BETWEEN JULY 1 AND SEPTEMBER 30, 1996", [('P000263', 4.0), ('P000258', 4.0), ('H000789', 3.0), ('H000676', 2.5), ('P000171', 2.4)]
+Reason: not legislator at time of travel
+
+ERROR 1997q1feb06.txt: ['Hon. F. James Sensenbrenne', 'Jr', '12/12/1997'], invalid literal for int() with base 10: 'Jr'
+
+Missing 2007q4oct09.txt: "Hon. Melissa Adamson","5/25/2007","5/30/2007","Portugal","(AMENDED) REPORT OF EXPENDITURES FOR OFFICIAL FOREIGN TRAVEL, DELEGATION TO NATO PARLIAMENT ARIAN ASSEMBLY SPRING MEETING IN MADEIRA, PORTUGAL; FOLLOWED BY BILATERAL MEETINGS IN LISBON,", [('H001034', 2.742857142857143), ('H001042', 2.2285714285714286), ('H000712', 2.0), ('H000666', 2.0), ('H001032', 2.0)]
+Reason: staff
+
+ERROR 1999q2jun24.txt: ['Hon. John Conyer', 'Jr', '1/27/1999'], invalid literal for int() with base 10: 'Jr'
+ERROR 1999q2jun24.txt: ['Hon. John Conyer', 'Jr', '1/28/1999'], invalid literal for int() with base 10: 'Jr'
+ERROR 1999q2may14.txt: ['Hon. Robert E. (Bud) Crame', 'Jr', '2/1/1999'], invalid literal for int() with base 10: 'Jr'
+ERROR 1999q2may14.txt: ['Hon. Robert E. (Bud) Crame', 'Jr', '2/1/1999'], invalid literal for int() with base 10: 'Jr'
+ERROR 1999q2may14.txt: ['Hon. Robert E. (Bud) Crame', 'Jr', '2/1/1999'], invalid literal for int() with base 10: 'Jr'
+ERROR 1999q2may14.txt: ['Hon. Robert E. (Bud) Crame', 'Jr', '2/2/1999'], invalid literal for int() with base 10: 'Jr'
+ERROR 1999q2may14.txt: ['Hon. Robert E. (Bud) Crame', 'Jr', '3/1/1999'], invalid literal for int() with base 10: 'Jr'
+ERROR 1999q2may14.txt: ['Hon. E. Clay Sha', 'Jr', '1/7/1999'], invalid literal for int() with base 10: 'Jr'
+ERROR 1999q2may14.txt: ['Hon. E. Clay Sha', 'Jr', '1/9/1999'], invalid literal for int() with base 10: 'Jr'
+ERROR 1999q2may14.txt: ['Hon. E. Clay Sha', 'Jr', '1/13/1999'], invalid literal for int() with base 10: 'Jr'
+
+Inconcl. 1999q2may14.txt: "Hon. Timothy Reif","1/7/1999","1/9/1999","Venezuela","REPORT OF EXPENDITURES FOR OFFICIAL FOREIGN TRAVEL, COMMITTEE ON WAYS AND MEANS, HOUSE OF REPRESENTATIVES, EXPENDED BETWEEN JAN. 1 AND MAR. 31, 1999", [('R000146', 3.16), ('H000789', 3.0), ('H000712', 2.342857142857143), ('H001032', 2.2), ('R000385', 2.1333333333333333)]
+Reason: chief international trade counsel for the committee
+
+ERROR 2016q1feb11.txt: ['Hon. Frederica Wilson', '10//2016', '10/2/2016'], invalid literal for int() with base 10: ''
+ERROR 2003q2apr30.txt: ['Hon. Sanford Bisho', 'Jr', '6/29/2003'], invalid literal for int() with base 10: 'Jr'
+
+Inconcl. 2003q2apr30.txt: "Hon. Tim Roemer","6/29/2003","7/3/2003","Europe","", [('R000395', 3.0), ('H000712', 2.8), ('R000575', 2.6666666666666665), ('R000572', 2.6666666666666665), ('H001034', 2.4)]
+Reason: not legislator at time of travel
+
+Inconcl. 2003q2apr30.txt: "Hon. Dan Byers","1/12/2003","1/18/2003","New Zealand","", [('B001203', 3.2), ('H000789', 3.0), ('H000666', 2.5), ('B000072', 2.5), ('D000432', 2.48)]
+Reason: not legislator
+
+Inconcl. 2003q2apr30.txt: "Hon. Tim Clancy","1/12/2003","1/18/2003","New Zealand","", [('H000789', 3.0), ('H000712', 2.8), ('C001049', 2.6666666666666665), ('H001034', 2.4), ('C001034', 2.2857142857142856)]
+Reason: not legislator
+
+Inconcl. 2003q2apr30.txt: "Hon. Scott Giles","1/12/2003","1/18/2003","New Zealand","", [('S001157', 4.0), ('S000185', 4.0), ('H000789', 3.2285714285714286), ('H001034', 2.4), ('G000121', 2.4)]
+Reason: not legislator
+
+Inconcl. 1997q4nov08.txt: "Hon. Brett O'Brien","7/7/1997","7/9/1997","Spain","", [('B000444', 3.2), ('B000179', 3.177142857142857), ('H000789', 3.0), ('B000177', 2.857142857142857), ('B000993', 2.533333333333333)]
+Reason: probably not legislator
+
+Missing 2010q1feb26.txt: "Hon. John P. Murtha","11/22/2010","11/23/2010","Kuwait","REPORT OF EXPENDITURES FOR OFFICIAL FOREIGN TRAVEL, COMMITTEE ON APPROPRIATIONS, HOUSE OF REPRESENTATIVES, EXPENDED BETWEEN OCT. 1 AND DEC. 31, 2009", [('M001168', 2.880952380952381), ('M001111', 2.8266666666666667), ('J000288', 2.7857142857142856), ('H001034', 2.742857142857143), ('J000177', 2.6857142857142855)]
+Reason: not legislator at time of travel
+
+Missing 2010q1feb26.txt: "Hon. Erin C. Conaton","11/23/2010","11/25/2010","Romania","REPORT OF EXPENDITURES FOR OFFICIAL FOREIGN TRAVEL, COMMITTEE ON ARMED SERVICES, HOUSE OF REPRESENTATIVES, EXPENDED BETWEEN OCT. 1 AND DEC. 31, 2009", [('C001046', 2.8857142857142857), ('C001088', 2.4457142857142857), ('H001034', 2.4), ('C000705', 2.2857142857142856), ('C001072', 2.2857142857142856)]
+Reason: staff
+
+Missing 2010q1feb26.txt: "Hon. Thomas Hawley","11/23/2010","11/25/2010","Romania","REPORT OF EXPENDITURES FOR OFFICIAL FOREIGN TRAVEL, COMMITTEE ON ARMED SERVICES, HOUSE OF REPRESENTATIVES, EXPENDED BETWEEN OCT. 1 AND DEC. 31, 2009", [('T000460', 2.5), ('T000467', 2.5), ('T000193', 2.5), ('H001034', 2.4), ('T000465', 2.2857142857142856)]
+Reason: staff
+
+Inconcl. 2010q1feb26.txt: "Hon. Mark Lewis","11/23/2010","11/25/2010","Romania","REPORT OF EXPENDITURES FOR OFFICIAL FOREIGN TRAVEL, COMMITTEE ON ARMED SERVICES, HOUSE OF REPRESENTATIVES, EXPENDED BETWEEN OCT. 1 AND DEC. 31, 2009", [('L000274', 4.0), ('L000287', 4.0), ('M001155', 3.0), ('H001034', 2.9), ('M000133', 2.6666666666666665)]
+Reason: probably not legislator
+
+Missing 2010q1feb26.txt: "Hon. J. Phillip MavNaughton","11/23/2010","11/25/2010","Romania","REPORT OF EXPENDITURES FOR OFFICIAL FOREIGN TRAVEL, COMMITTEE ON ARMED SERVICES, HOUSE OF REPRESENTATIVES, EXPENDED BETWEEN OCT. 1 AND DEC. 31, 2009", [('H001034', 2.5454545454545454), ('M001161', 2.2181818181818183), ('H001042', 2.1454545454545455), ('P000034', 2.1142857142857143), ('M001142', 2.084848484848485)]
+Reason: probably not legislator, and also wrong spelling 'MacNaughton'
+
+Inconcl. 2010q1feb26.txt: "Hon. Ryan Crumpler","11/23/2010","11/25/2010","Romania","REPORT OF EXPENDITURES FOR OFFICIAL FOREIGN TRAVEL, COMMITTEE ON ARMED SERVICES, HOUSE OF REPRESENTATIVES, EXPENDED BETWEEN OCT. 1 AND DEC. 31, 2009", [('R000577', 4.0), ('R000570', 4.0), ('C000174', 2.6142857142857143), ('R000053', 2.5), ('H001034', 2.4)]
+Reason: staff
+
+Missing 2010q1feb26.txt: "Hon. Bess Cuaghran","11/11/2010","11/14/2010","Italy","REPORT OF EXPENDITURES FOR OFFICIAL FOREIGN TRAVEL, COMMITTEE ON SCIENCE AND TECHNOLOGY, HOUSE OF REPRESENTATIVES, EXPENDED BETWEEN OCT. 1 AND DEC. 31, 2009", [('C001060', 2.5), ('C000567', 2.5), ('H001034', 2.4), ('C001058', 2.4), ('B001248', 2.3357142857142854)]
+Reason: staff
+
+ERROR 2007q4nov08.txt: ['Hon. Charles W. Boustan', 'Jr', '8/27/2007'], invalid literal for int() with base 10: 'Jr'
+ERROR 1999q2apr15.txt: ['Hon. E. Clay Sha', 'Jr', '5/14/1999'], invalid literal for int() with base 10: 'Jr'
+ERROR 2015q4dec07.txt: ["Hon. Garland ``Andy'' Barr", '/10/2015', '/11/2015'], invalid literal for int() with base 10: ''
+ERROR 2015q4dec07.txt: ["Hon. Garland ``Andy'' Barr", '/11/2015', '/13/2015'], invalid literal for int() with base 10: ''
+ERROR 2015q4dec07.txt: ["Hon. Garland ``Andy'' Barr", '/13/2015', '/14/2015'], invalid literal for int() with base 10: ''
+ERROR 2015q4dec07.txt: ["Hon. Garland ``Andy'' Barr", '/14/2015', '/15/2015'], invalid literal for int() with base 10: ''
+ERROR 2015q4dec07.txt: ["Hon. Garland ``Andy'' Barr", '/15/2015', '/16/2015'], invalid literal for int() with base 10: ''
+ERROR 2015q4dec07.txt: ["Hon. Garland ``Andy'' Barr", '/16/2015', '/17/2015'], invalid literal for int() with base 10: ''
+
+Inconcl. 2015q4dec07.txt: "Hon. Bill Johnson","10/10/2015","10/13/2015","Norway","REPORT OF EXPENDITURES FOR OFFICIAL FOREIGN TRAVEL, DELEGATION TO NORWAY, EXPENDED BETWEEN OCT. 9 AND OCT. 13, 2015", [('J000292', 4.8), ('J000288', 4.5), ('J000126', 4.114285714285714), ('J000293', 4.0), ('J000174', 4.0)]
+Reason: first is "Bill Johnson", second is "Hank Johnson", third is "E. B. Johnson", probably counted "Hank" as good match for "Hon."
+
+ERROR 2005q1mar16.txt: ['Hon. F. James Sensenbrenne', 'Jr', '12/8/2005'], invalid literal for int() with base 10: 'Jr'
+ERROR 2005q1mar16.txt: ['Hon. Bill Pascrel', 'Jr', '10/12/2005'], invalid literal for int() with base 10: 'Jr'
+ERROR 2005q1mar16.txt: ['Hon. Bill Pascrel', 'Jr', '10/13/2005'], invalid literal for int() with base 10: 'Jr'
+ERROR 2005q1mar16.txt: ['Hon. Bill Pascrel', 'Jr', '10/14/2005'], invalid literal for int() with base 10: 'Jr'
+ERROR 1999q4nov15.txt: ['Hon. Ernest J. Istoo', 'Jr', '7/4/1999'], invalid literal for int() with base 10: 'Jr'
+
+Inconcl. 1999q4nov15.txt: "Hon. Helen Chenoweth \3\","7/12/1999","7/13/1999","France","REPORT OF EXPENDITURES FOR OFFICIAL FOREIGN TRAVEL, COMMITTEE ON RESOURCES, HOUSE OF REPRESENTATIVES, EXPENDED BETWEEN JULY 1, AND SEPT. 30, 1999", [('H000789', 3.0), ('C000345', 2.8), ('H000712', 2.6666666666666665), ('H000444', 2.6666666666666665), ('H001028', 2.6666666666666665)]
+Reason: the second one is correct, but the full lastname is "Chenoweth-Hage", first one is "Stephen Horn" so maybe "Horn" got matched with "Hon."
+
+Inconcl. 2014q3jul22.txt: "Hon. Jackson Lee","6/12/2014","6/16/2014","Nigeria","REPORT OF EXPENDITURES FOR OFFICIAL FOREIGN TRAVEL, COMMITTEE ON HOMELAND SECURITY, HOUSE OF REPRESENTATIVES, EXPENDED BETWEEN APR. 1 AND JUNE 30, 2014", [('L000551', 4.0), ('L000577', 4.0), ('J000032', 4.0), ('J000288', 2.7857142857142856), ('H001034', 2.4)]
+Reason: first result is 'Sheila Jackson Lee', so full lastname match, second is 'Mike Lee', counted as another lastname match. Maybe should give more weight to longer names?
+
+ERROR 2010q2may20.txt: ['Hon. F. James Sensenbrenne', 'Jr', '3/28/2010'], invalid literal for int() with base 10: 'Jr'
+ERROR 2000q4oct25.txt: ["Hon. Robert E. ``Bud'' Crame", 'Jr', '7/5/2000'], invalid literal for int() with base 10: 'Jr'
+ERROR 2000q4oct25.txt: ["Hon. Robert E. ``Bud'' Crame", 'Jr', '7/6/2000'], invalid literal for int() with base 10: 'Jr'
+ERROR 2000q4oct25.txt: ["Hon. Robert E. ``Bud'' Crame", 'Jr', '7/7/2000'], invalid literal for int() with base 10: 'Jr'
+ERROR 1999q1feb04.txt: ['Hon. George E. Brow', 'Jr', '12/5/1999'], invalid literal for int() with base 10: 'Jr'
+
+Inconcl. 1999q1feb04.txt: "Hon. Scott McGinnis","11/10/1999","11/13/1999","Scotland","AMENDED REPORT OF EXPENDITURES FOR OFFICIAL FOREIGN TRAVEL, HOUSE DELEGATION TO THE NORTH ATLANTIC ASSEMBLY AND BRITISH-AMERICAN PARLIAMENTARY GROUP, EXPENDED BETWEEN NOV. 8 AND NOV. 15, 1998", [('M000477', 4.3), ('S000185', 4.0), ('H000789', 3.2285714285714286), ('M000481', 2.5), ('M000523', 2.5)]
+Reason: first one is 'Scott McInnis', second is 'Bobby Scott'
+
+ERROR 1998q1mar11.txt: ['Hon. John Conyer', 'Jr', '6/29/1998'], invalid literal for int() with base 10: 'Jr'
+ERROR 1998q1mar11.txt: ['Hon. John Conyer', 'Jr', '9/5/1998'], invalid literal for int() with base 10: 'Jr'
+
+Inconcl. 1998q1mar11.txt: "Hon. Jim Maloney","1/11/1998","1/16/1998","Israel","REPORT OF EXPENDITURES FOR OFFICIAL FOREIGN TRAVEL, DELEGATION TO ISRAEL, JORDAN AND SPAIN, HOUSE OF REPRESENTATIVES, EXPENDED BETWEEN JAN. 10", [('M000090', 4.32), ('M000087', 4.0), ('M000834', 3.0571428571428574), ('H000789', 3.0), ('M000933', 2.7142857142857144)]
+Reason: first one 'James Maloney', second one 'Carolyn Maloney'
+
+ERROR 2006q2jun21.txt: ['Hon. F. James Sensenbrenne', 'Jr', '1/7/2006'], invalid literal for int() with base 10: 'Jr'
+ERROR 2006q2jun21.txt: ['Hon. F. James Sensenbrenne', 'Jr', '1/10/2006'], invalid literal for int() with base 10: 'Jr'
+ERROR 2006q2jun21.txt: ['Hon. F. James Sensenbrenne', 'Jr', '1/12/2006'], invalid literal for int() with base 10: 'Jr'
+
+Inconcl. 2003q4nov10.txt: "Hon. Jim Ryan","9/2/2003","9/2/2003","Germany","", [('R000577', 4.133333333333334), ('R000570', 4.0), ('R000566', 3.8), ('H001034', 2.4), ('H001032', 2.2)]
+Reason: probably should be 'Tim Ryan'?
+
+Missing 2003q4nov10.txt: "Hon. Marc Wheat","9/20/2003","9/23/2003","Italy","", [('H001034', 2.65), ('W000207', 2.65), ('W000187', 2.2666666666666666), ('M001134', 2.08), ('H000712', 2.0)]
+Reason: not legislator
+
+ERROR 2001q2may23.txt: ['Hon. J.C. Watt', 'Jr', '4/6/2001'], invalid literal for int() with base 10: 'Jr'
+ERROR 2001q2may23.txt: ['Hon. J.C. Watt', 'Jr', '4/7/2001'], invalid literal for int() with base 10: 'Jr'
+ERROR 2001q2may23.txt: ['Hon. J.C. Watt', 'Jr', '4/9/2001'], invalid literal for int() with base 10: 'Jr'
+ERROR 2001q2may23.txt: ['Hon. J.C. Watt', 'Jr', '4/10/2001'], invalid literal for int() with base 10: 'Jr'
+ERROR 2001q2may23.txt: ['Hon. E.B. Johnson', '4\\)/2001', '\\)/2001'], invalid literal for int() with base 10: '4\\)'
+
+Inconcl. 1998q4nov12.txt: "Hon. Robert F. Smith","8/21/1998","8/26/1998","Egypt","REPORT OF EXPENDITURES FOR OFFICIAL FOREIGN TRAVEL, COMMITTEE ON AGRICULTURE, HOUSE OF REPRESENTATIVES, EXPENDED BETWEEN JULY 1 AND SEPT. 31, 1998", [('S000607', 4.857142857142858), ('S000606', 4.8), ('S000522', 4.133333333333334), ('S001142', 4.133333333333334), ('S000597', 4.0)]
+Reason: first one is 'Robert Freeman Smith', second one is 'Robert Smith'
+
+ERROR 1998q4nov12.txt: ['Hon. E. Clay Sha', 'Jr. (Shuster CODEL)', '8/9/1998'], invalid literal for int() with base 10: 'Jr. (Shuster CODEL)'
+ERROR 1998q4nov12.txt: ['Hon. E. Clay Sha', 'Jr. (Shuster CODEL)', '8/11/1998'], invalid literal for int() with base 10: 'Jr. (Shuster CODEL)'
+ERROR 1998q4nov12.txt: ['Hon. E. Clay Sha', 'Jr. (Shuster CODEL)', '8/13/1998'], invalid literal for int() with base 10: 'Jr. (Shuster CODEL)'
+ERROR 1998q4nov12.txt: ['Hon. E. Clay Sha', 'Jr. (Shuster CODEL)', '8/13/1998'], invalid literal for int() with base 10: 'Jr. (Shuster CODEL)'
+ERROR 1998q4nov12.txt: ['Hon. E. Clay Sha', 'Jr. (Shuster CODEL)', '8/15/1998'], invalid literal for int() with base 10: 'Jr. (Shuster CODEL)'
+
+Inconcl. 1998q4nov12.txt: "Hon. Charles Johnson","8/7/1998","8/15/1998","Ireland","REPORT OF EXPENDITURES FOR OFFICIAL FOREIGN TRAVEL, HOUSE DELEGATION TO IRELAND, EXPENDED BETWEEN AUG. 7 AND AUG. 15, 1998", [('J000174', 4.0), ('J000149', 4.0), ('J000163', 4.0), ('J000126', 4.0), ('J000177', 4.0)]
+Reason: parliamentarian, not legislator
+
+Inconcl. 1996q2may15.txt: "Hon. George O. Withers","2/9/1996","2/10/1996","Nicaragua","REPORT OF EXPENDITURES FOR OFFICIAL FOREIGN TRAVEL, COMMITTEE ON NATIONAL SECURITY, HOUSE OF REPRESENTATIVES, EXPENDED BETWEEN JAN. 1, AND MAR. 31, 1996", [('H000789', 3.0), ('W000187', 2.857142857142857), ('G000134', 2.6666666666666665), ('W000437', 2.2857142857142856), ('W000391', 2.2857142857142856)]
+Reason: staff
+
+ERROR 2009q3jul13.txt: ['Hon. Nancy Pelos', 'Speaker', '5/24/2009'], invalid literal for int() with base 10: 'Speaker'
+ERROR 2008q2may19.txt: ['Hon. Nancy Pelos', 'Speaker', '3/18/2008'], invalid literal for int() with base 10: 'Speaker'
+ERROR 2008q2may19.txt: ['Hon. Nancy Pelos', 'Speaker', '3/19/2008'], invalid literal for int() with base 10: 'Speaker'
+ERROR 2008q2may19.txt: ['Hon. Nancy Pelos', 'Speaker', '3/25/2008'], invalid literal for int() with base 10: 'Speaker'
+
+Missing 2008q2may19.txt: "Hon. Dennis Halpin","1/4/2008","1/6/2008","Thailand","REPORT OF EXPENDITURES FOR OFFICIAL FOREIGN TRAVEL, COMMITTEE ON FOREIGN AFFAIRS, HOUSE OF REPRESENTATIVES,  EXPENDED BETWEEN JAN. 1 AND MAR. 31, 2008", [('H000206', 2.6666666666666665), ('H001034', 2.4), ('H000666', 2.3333333333333335), ('H000329', 2.1333333333333333), ('H001032', 2.066666666666667)]
+Reason: staff
+
+ERROR 2007q2jun05.txt: ['Hon. Nancy Pelos', 'Speaker', '3/30/2007'], invalid literal for int() with base 10: 'Speaker'
+ERROR 2007q2jun05.txt: ['Hon. Nancy Pelos', 'Speaker', '4/4/2007'], invalid literal for int() with base 10: 'Speaker'
+ERROR 2007q2jun05.txt: ['Hon. Nancy Pelos', 'Speaker', '4/6/2007'], invalid literal for int() with base 10: 'Speaker'
+
+Inconcl. 2008q1feb14.txt: "Hon. Bill Young","10/4/2008","10/9/2008","Italy","REPORT OF EXPENDITURES FOR OFFICIAL FOREIGN TRAVEL, COMMITTEE ON APPROPRIATONS, HOUSE OF REPRESENTATIVES, EXPENDED BETWEEN OCT. 1 AND DEC. 31, 2007", [('Y000031', 4.2), ('Y000033', 4.0), ('H001034', 2.4), ('H000666', 2.0), ('H000712', 2.0)]
+Reason: first is 'C. / W.Bill / Young', second is 'Don Young'
+
+ERROR 2008q1feb14.txt: ['Hon. Solomon Ortiz', '/5/2008', '10/8/2008'], invalid literal for int() with base 10: ''
+ERROR 2008q1feb14.txt: ['Hon. Solomon Ortiz', '/8/2008', '10/9/2008'], invalid literal for int() with base 10: ''
+ERROR 2008q1feb14.txt: ['Hon. Candice Miller', '/5/2008', '10/8/2008'], invalid literal for int() with base 10: ''
+ERROR 2008q1feb14.txt: ['Hon. Candice Miller', '/8/2008', '10/9/2008'], invalid literal for int() with base 10: ''
+ERROR 2008q1feb14.txt: ['Hon. David Loebsack', '/19/2008', '10/2/2008'], invalid literal for int() with base 10: ''
+ERROR 2008q1feb14.txt: ['Hon. David Loebsack', '/20/2008', '10/2/2008'], invalid literal for int() with base 10: ''
+ERROR 2008q1feb14.txt: ['Hon. David Loebsack', '/21/2008', '10/2/2008'], invalid literal for int() with base 10: ''
+ERROR 2008q1feb14.txt: ['Hon. Tom Cole', '/19/2008', '10/2/2008'], invalid literal for int() with base 10: ''
+ERROR 2008q1feb14.txt: ['Hon. Tom Cole', '/20/2008', '10/2/2008'], invalid literal for int() with base 10: ''
+ERROR 2008q1feb14.txt: ['Hon. Tom Cole', '/21/2008', '10/2/2008'], invalid literal for int() with base 10: ''
+ERROR 2008q1feb14.txt: ['Hon. Adam Smith', '/3/2008', '11/3/2008'], invalid literal for int() with base 10: ''
+ERROR 2008q1feb14.txt: ['Hon. Adam Smith', '/3/2008', '11/4/2008'], invalid literal for int() with base 10: ''
+ERROR 2008q1feb14.txt: ['Hon. Adam Smith', '/4/2008', '11/5/2008'], invalid literal for int() with base 10: ''
+ERROR 2008q1feb14.txt: ['Hon. Mac Thornberry', '/3/2008', '11/3/2008'], invalid literal for int() with base 10: ''
+ERROR 2008q1feb14.txt: ['Hon. Mac Thornberry', '/3/2008', '11/4/2008'], invalid literal for int() with base 10: ''
+ERROR 2008q1feb14.txt: ['Hon. Mac Thornberry', '/4/2008', '11/5/2008'], invalid literal for int() with base 10: ''
+ERROR 2008q1feb14.txt: ['Hon. Gabrielle Giffords', '/3/2008', '11/3/2008'], invalid literal for int() with base 10: ''
+ERROR 2008q1feb14.txt: ['Hon. Gabrielle Giffords', '/3/2008', '11/4/2008'], invalid literal for int() with base 10: ''
+ERROR 2008q1feb14.txt: ['Hon. Gabrielle Giffords', '/4/2008', '11/5/2008'], invalid literal for int() with base 10: ''
+ERROR 2008q1feb14.txt: ['Hon. Bill Shuster', '/3/2008', '11/3/2008'], invalid literal for int() with base 10: ''
+ERROR 2008q1feb14.txt: ['Hon. Bill Shuster', '/3/2008', '11/4/2008'], invalid literal for int() with base 10: ''
+ERROR 2008q1feb14.txt: ['Hon. Bill Shuster', '/4/2008', '11/5/2008'], invalid literal for int() with base 10: ''
+ERROR 2008q1feb14.txt: ['Hon. Loretta Sanchez', '/18/2008', '11/2/2008'], invalid literal for int() with base 10: ''
+ERROR 2008q1feb14.txt: ['Hon. Loretta Sanchez', '/20/2008', '11/2/2008'], invalid literal for int() with base 10: ''
+ERROR 2008q1feb14.txt: ['Hon. Loretta Sanchez', '/21/2008', '11/2/2008'], invalid literal for int() with base 10: ''
+ERROR 2008q1feb14.txt: ['Hon. Loretta Sanchez', '/23/2008', '11/2/2008'], invalid literal for int() with base 10: ''
+ERROR 2008q1feb14.txt: ['Hon. Roscoe Bartlett', '/18/2008', '11/2/2008'], invalid literal for int() with base 10: ''
+ERROR 2008q1feb14.txt: ['Hon. Roscoe Bartlett', '/20/2008', '11/2/2008'], invalid literal for int() with base 10: ''
+ERROR 2008q1feb14.txt: ['Hon. Roscoe Bartlett', '/21/2008', '11/2/2008'], invalid literal for int() with base 10: ''
+ERROR 2008q1feb14.txt: ['Hon. Roscoe Bartlett', '/23/2008', '11/2/2008'], invalid literal for int() with base 10: ''
+ERROR 2008q1feb14.txt: ['Hon. Jim Marshall', '/19/2008', '11/2/2008'], invalid literal for int() with base 10: ''
+ERROR 2008q1feb14.txt: ['Hon. Jim Marshall', '/20/2008', '11/2/2008'], invalid literal for int() with base 10: ''
+ERROR 2008q1feb14.txt: ['Hon. Jim Marshall', '/21/2008', '11/2/2008'], invalid literal for int() with base 10: ''
+ERROR 2008q1feb14.txt: ['Hon. Jim Marshall', '/22/2008', '11/2/2008'], invalid literal for int() with base 10: ''
+ERROR 2008q1feb14.txt: ['Hon. Jim Marshall', '/23/2008', '11/2/2008'], invalid literal for int() with base 10: ''
+ERROR 2008q1feb14.txt: ['Hon. Jim Marshall', '/24/2008', '11/2/2008'], invalid literal for int() with base 10: ''
+ERROR 2008q1feb14.txt: ['Hon. Kentrick Meek', '/24/2008', '11/2/2008'], invalid literal for int() with base 10: ''
+ERROR 2008q1feb14.txt: ['Hon. Kentrick Meek', '/26/2008', '11/2/2008'], invalid literal for int() with base 10: ''
+ERROR 2008q1feb14.txt: ['Hon. Kentrick Meek', '/28/2008', '11/3/2008'], invalid literal for int() with base 10: ''
+ERROR 2008q1feb14.txt: ['Hon. Kentrick Meek', '/30/2008', '12/1/2008'], invalid literal for int() with base 10: ''
+ERROR 2008q1feb14.txt: ['Hon. Kentrick Meek', '/1/2008', '12/2/2008'], invalid literal for int() with base 10: ''
+ERROR 2008q1feb14.txt: ['Hon. Joe Wilson', '/27/2008', '11/2/2008'], invalid literal for int() with base 10: ''
+ERROR 2008q1feb14.txt: ['Hon. Joe Wilson', '/28/2008', '11/2/2008'], invalid literal for int() with base 10: ''
+ERROR 2008q1feb14.txt: ['Hon. Joe Wilson', '/29/2008', '11/2/2008'], invalid literal for int() with base 10: ''
+ERROR 2008q1feb14.txt: ['Hon. Joe Wilson', '/30/2008', '12/3/2008'], invalid literal for int() with base 10: ''
+ERROR 2008q1feb14.txt: ['Hon. Mike McIntyre', '/27/2008', '11/2/2008'], invalid literal for int() with base 10: ''
+ERROR 2008q1feb14.txt: ['Hon. Mike McIntyre', '/27/2008', '11/2/2008'], invalid literal for int() with base 10: ''
+ERROR 2008q1feb14.txt: ['Hon. Mike McIntyre', '/28/2008', '11/2/2008'], invalid literal for int() with base 10: ''
+ERROR 2008q1feb14.txt: ['Hon. Mike McIntyre', '/28/2008', '11/2/2008'], invalid literal for int() with base 10: ''
+ERROR 2008q1feb14.txt: ['Hon. Mike McIntyre', '/29/2008', '11/3/2008'], invalid literal for int() with base 10: ''
+ERROR 2008q1feb14.txt: ['Hon. Mike McIntyre', '/30/2008', '12/2/2008'], invalid literal for int() with base 10: ''
+ERROR 2008q1feb14.txt: ['Hon. Mike McIntyre', '/1/2008', '12/1/2008'], invalid literal for int() with base 10: ''
+ERROR 2008q1feb14.txt: ['Hon. Mike McIntyre', '/2/2008', '12/2/2008'], invalid literal for int() with base 10: ''
+ERROR 2008q1feb14.txt: ['Hon. Mike McIntyre', '/2/2008', '12/3/2008'], invalid literal for int() with base 10: ''
+ERROR 2008q1feb14.txt: ['Hon. Dan Boren', '/27/2008', '11/2/2008'], invalid literal for int() with base 10: ''
+ERROR 2008q1feb14.txt: ['Hon. Dan Boren', '/27/2008', '11/2/2008'], invalid literal for int() with base 10: ''
+ERROR 2008q1feb14.txt: ['Hon. Dan Boren', '/28/2008', '11/2/2008'], invalid literal for int() with base 10: ''
+ERROR 2008q1feb14.txt: ['Hon. Dan Boren', '/28/2008', '11/2/2008'], invalid literal for int() with base 10: ''
+ERROR 2008q1feb14.txt: ['Hon. Dan Boren', '/29/2008', '11/3/2008'], invalid literal for int() with base 10: ''
+ERROR 2008q1feb14.txt: ['Hon. Dan Boren', '/30/2008', '12/2/2008'], invalid literal for int() with base 10: ''
+ERROR 2008q1feb14.txt: ['Hon. Dan Boren', '/1/2008', '12/1/2008'], invalid literal for int() with base 10: ''
+ERROR 2008q1feb14.txt: ['Hon. Dan Boren', '/2/2008', '12/2/2008'], invalid literal for int() with base 10: ''
+ERROR 2008q1feb14.txt: ['Hon. Dan Boren', '/2/2008', '12/3/2008'], invalid literal for int() with base 10: ''
+ERROR 2008q1feb14.txt: ['Hon. Neil Abercrombie', '/27/2008', '11/2/2008'], invalid literal for int() with base 10: ''
+ERROR 2008q1feb14.txt: ['Hon. Neil Abercrombie', '/28/2008', '11/3/2008'], invalid literal for int() with base 10: ''
+ERROR 2008q1feb14.txt: ['Hon. Neil Abercrombie', '/30/2008', '12/2/2008'], invalid literal for int() with base 10: ''
+ERROR 2008q1feb14.txt: ['Hon. Susan Davis', '/27/2008', '11/2/2008'], invalid literal for int() with base 10: ''
+ERROR 2008q1feb14.txt: ['Hon. Susan Davis', '/28/2008', '11/3/2008'], invalid literal for int() with base 10: ''
+ERROR 2008q1feb14.txt: ['Hon. Susan Davis', '/30/2008', '12/2/2008'], invalid literal for int() with base 10: ''
+ERROR 2008q1feb14.txt: ['Hon. Phil Gingrey', '/27/2008', '11/2/2008'], invalid literal for int() with base 10: ''
+ERROR 2008q1feb14.txt: ['Hon. Phil Gingrey', '/29/2008', '12/1/2008'], invalid literal for int() with base 10: ''
+ERROR 2008q1feb14.txt: ['Hon. Phil Gingrey', '/1/2008', '12/2/2008'], invalid literal for int() with base 10: ''
+ERROR 2008q1feb14.txt: ['Hon. Gene Taylor', '/15/2008', '12/1/2008'], invalid literal for int() with base 10: ''
+ERROR 2008q1feb14.txt: ['Hon. Gene Taylor', '/15/2008', '12/1/2008'], invalid literal for int() with base 10: ''
+ERROR 2008q1feb14.txt: ['Hon. Gene Taylor', '/16/2008', '12/1/2008'], invalid literal for int() with base 10: ''
+ERROR 2008q1feb14.txt: ['Hon. Ike Skelton', '/23/2008', '12/2/2008'], invalid literal for int() with base 10: ''
+ERROR 2008q1feb14.txt: ['Hon. Ike Skelton', '/24/2008', '12/2/2008'], invalid literal for int() with base 10: ''
+ERROR 2008q1feb14.txt: ['Hon. Ike Skelton', '/25/2008', '12/2/2008'], invalid literal for int() with base 10: ''
+ERROR 2008q1feb14.txt: ['Hon. Gene Taylor', '/23/2008', '12/2/2008'], invalid literal for int() with base 10: ''
+ERROR 2008q1feb14.txt: ['Hon. Nancy Boyda', '/23/2008', '12/2/2008'], invalid literal for int() with base 10: ''
+ERROR 2008q1feb14.txt: ['Hon. Nancy Boyda', '/24/2008', '12/2/2008'], invalid literal for int() with base 10: ''
+ERROR 2008q1feb14.txt: ['Hon. Nancy Boyda', '/25/2008', '12/2/2008'], invalid literal for int() with base 10: ''
+ERROR 2008q1feb14.txt: ['Hon. Randy Forbes', '/23/2008', '12/2/2008'], invalid literal for int() with base 10: ''
+ERROR 2008q1feb14.txt: ['Hon. Randy Forbes', '/24/2008', '12/2/2008'], invalid literal for int() with base 10: ''
+ERROR 2008q1feb14.txt: ['Hon. Randy Forbes', '/25/2008', '12/2/2008'], invalid literal for int() with base 10: ''
+ERROR 2008q1feb14.txt: ['Hon. John R. Kuh', 'Jr', 'CODEL led by'], invalid literal for int() with base 10: 'Jr'
+ERROR 2008q1feb14.txt: ['Hon. John R. Kuh', 'Jr', 'CODEL led by'], invalid literal for int() with base 10: 'Jr'
+ERROR 2008q1feb14.txt: ['Hon. John R. Kuh', 'Jr', 'CODEL led by'], invalid literal for int() with base 10: 'Jr'
+ERROR 2008q1feb14.txt: ['Hon. John R. Kuh', 'Jr', 'CODEL led by'], invalid literal for int() with base 10: 'Jr'
+ERROR 2008q1feb14.txt: ['Hon. Carolyn McCarth', 'CODEL led by', '11/27/2008'], invalid literal for int() with base 10: 'CODEL led by'
+ERROR 2008q1feb14.txt: ['Hon. Carolyn McCarth', 'CODEL led by', '11/28/2008'], invalid literal for int() with base 10: 'CODEL led by'
+ERROR 2008q1feb14.txt: ['Hon. Carolyn McCarth', 'CODEL led by', '11/30/2008'], invalid literal for int() with base 10: 'CODEL led by'
+
+Inconcl. 2005q3sep19.txt: "Hon. Alexander M. Crenshaw","3/23/2005","3/25/2005","Egypt","REPORT OF EXPENDITURES FOR OFFICIAL FOREIGN TRAVEL, COMMITTEE ON APPROPRIATIONS, HOUSE OF REPRESENTATIVES, EXPENDED BETWEEN APR. 1 AND JUNE 30, 2005", [('C001045', 4.444444444444445), ('A000361', 4.4), ('A000360', 4.0), ('H001034', 2.8), ('C001060', 2.5)]
+Reason: first one is right, issue is that the legislator record didn't show Alexander and Mann as first and middle names
+
+ERROR 2010q1mar18.txt: ['Hon. John Conyer', 'Jr', '2/12/2010'], invalid literal for int() with base 10: 'Jr'
+ERROR 2001q3sep17.txt: ['Hon. George R. Nethercut', 'Jr', '6/15/2001'], invalid literal for int() with base 10: 'Jr'
+ERROR 2001q3sep17.txt: ['Hon. George R. Nethercut', 'Jr', '6/17/2001'], invalid literal for int() with base 10: 'Jr'
+ERROR 2001q3sep17.txt: ['Hon. Sanford Bisho', 'Jr', '4/9/2001'], invalid literal for int() with base 10: 'Jr'
+
+Inconcl. 2007q2may14.txt: "Hon. Jery Moran","4/6/2007","4/7/2007","Germany","REPORT OF EXPENDITURES FOR OFFICIAL FOREIGN TRAVEL, DELEGATION TO GREECE, SUDAN, EGYPT AND GERMANY, HOUSE OF REPRESENTATIVES, EXPENDED BETWEEN MAR. 31 AND APR. 7, 2007", [('M000934', 4.640000000000001), ('M000933', 4.32), ('H001034', 2.6285714285714286), ('M001140', 2.4), ('M001160', 2.4)]
+Reason: first one is 'Jerry Moran', second one is 'James Moran'
+
+Inconcl. 2007q2may14.txt: "Hon. Smith","2/19/2007","2/20/2007","Italy","REPORT OF EXPENDITURES FOR OFFICIAL FOREIGN TRAVEL, COMMITTEE ON FOREIGN AFFAIRS, HOUSE OF REPRESENTATIVES, EXPENDED BETWEEN JAN. 3 AND MAR. 31, 2007", [('S000522', 4.133333333333334), ('S001142', 4.133333333333334), ('S000510', 4.0), ('S000583', 4.0), ('S001172', 4.0)]
+Reason: come on, this is impossible
+
+ERROR 1999q1mar03.txt: ['Hon. George E. Brow', 'Jr', '12/5/1999'], invalid literal for int() with base 10: 'Jr'
+
+Missing 2005q3jul26.txt: "Hon. Patrick Prisco","5/27/2005","6/1/2005","Slovenia","REPORT OF EXPENDITURES FOR OFFICIAL FOREIGN TRAVEL, DELEGATION TO THE NATO PARLIAMENTARY ASSEMBLY MEETING IN LJUBLJANA, SLOVENIA; AND NATO PARLIAMENTARY ASSEMBLY DELEGATION MEETINGS IN BERLIN,", [('P000523', 2.6666666666666665), ('P000591', 2.6666666666666665), ('H001034', 2.4), ('P000588', 2.2857142857142856), ('P000099', 2.2857142857142856)]
+Reason: staff
+
+Missing 2005q3jul26.txt: "Hon. Chris Bell","10/24/2005","10/27/2005","Jordan","AMENDED REPORT OF EXPENDITURES FOR OFFICIAL FOREIGN TRAVEL, COMMITTEE ON INTERNATIONAL RELATIONS, HOUSE OF REPRESENTATIVES, EXPENDED BETWEEN OCT. 1 AND DEC. 31, 2005", [('H001034', 2.4), ('C000858', 2.4), ('B000652', 2.2857142857142856), ('C000141', 2.2), ('B000617', 2.0342857142857143)]
+Reason: (?) not legislator at time of travel
+
+Missing 2003q1jan31.txt: "Hon. Eva Clayton","8/6/2003","8/7/2003","South Africa","", [('C001041', 2.9714285714285715), ('C001046', 2.4857142857142858), ('C000537', 2.419047619047619), ('H001034', 2.4), ('E000250', 2.4)]
+Reason: not legislator at time of travel
+
+Missing 2003q1jan31.txt: "Hon. Sonny Callahan","8/10/2003","8/14/2003","Ireland","", [('H001034', 2.4), ('C001035', 2.3200000000000003), ('S000097', 2.2666666666666666), ('H000874', 2.08), ('C000567', 2.0)]
+Reason: not legislator at time of travel
+
+Inconcl. 2003q1jan31.txt: "Hon. Dan Miller","8/12/2003","8/19/2003","Australia","", [('M001144', 4.0), ('M001154', 4.0), ('M000725', 4.0), ('M001150', 4.0), ('M001139', 4.0)]
+Reason: not legislator at time of travel
+
+Missing 2003q1jan31.txt: "Hon. Tom Sawyer","8/24/2003","8/27/2003","Thailand","", [('S000672', 2.6666666666666665), ('H000712', 2.533333333333333), ('H001034', 2.4), ('H000206', 2.333333333333333), ('S000033', 2.2857142857142856)]
+Reason: not legislator at time of travel
+
+Missing 2003q1jan31.txt: "Hon. Earl Hilliard","8/6/2003","8/7/2003","South Africa","", [('H001034', 2.4), ('H000725', 2.2666666666666666), ('H000712', 2.0), ('H001032', 2.0), ('H000666', 2.0)]
+Reason: not legislator at time of travel
+
+Missing 2003q1jan31.txt: "Hon. James V. Hansen","8/12/2003","8/17/2003","Australia","", [('H000213', 2.48), ('H000323', 2.4457142857142857), ('H001034', 2.4), ('J000255', 2.4), ('J000284', 2.4)]
+Reason: not legislator at time of travel
+
+Missing 2003q1jan31.txt: "Hon. Bob Borski","8/7/2003","8/9/2003","Poland","", [('H001034', 2.4), ('B000711', 2.2285714285714286), ('B000617', 2.0342857142857143), ('H000712', 2.0), ('B001249', 2.0)]
+Reason: not legislator at time of travel
+
+Missing 2016q2jun28.txt: "Hon. Justin Wein","5/28/2016","5/29/2016","Mongolia","REPORT OF EXPENDITURES FOR OFFICIAL FOREIGN TRAVEL, DELEGATION TO MONGOLIA, BURMA, KYRGYSTAN, AND UKRAINE, EXPENDED BETWEEN MAY 26 AND JUNE 5, 2016", [('W000779', 2.4), ('H001034', 2.4), ('H001061', 2.2666666666666666), ('H001063', 2.2666666666666666), ('J000288', 2.2142857142857144)]
+Reason: staff
+
+Missing 2016q2jun28.txt: "Hon. Jeff Billman","5/28/2016","5/29/2016","Mongolia","REPORT OF EXPENDITURES FOR OFFICIAL FOREIGN TRAVEL, DELEGATION TO MONGOLIA, BURMA, KYRGYSTAN, AND UKRAINE, EXPENDED BETWEEN MAY 26 AND JUNE 5, 2016", [('B001236', 2.4857142857142858), ('H001034', 2.4), ('H001063', 2.2666666666666666), ('H001061', 2.2), ('J000294', 2.1333333333333333)]
+Reason: staff
+
+ERROR 2001q2jun25.txt: ['Hon. F. James Sensenbrenne', 'Jr', '2/17/2001'], invalid literal for int() with base 10: 'Jr'
+ERROR 2001q2jun25.txt: ['Hon. F. James Sensenbrenne', 'Jr', '2/20/2001'], invalid literal for int() with base 10: 'Jr'
+ERROR 2001q2jun25.txt: ['Hon. F. James Sensenbrenne', 'Jr', '2/22/2001'], invalid literal for int() with base 10: 'Jr'
+ERROR 2001q2jun25.txt: ['Hon. F. James Sensenbrenne', 'Jr', '2/24/2001'], invalid literal for int() with base 10: 'Jr'
+
+Inconcl. 2001q2jun25.txt: "Hon. M. McNulty (Gilman Codel)","1/22/2001","1/25/2001","Italy","REPORT OF EXPENDITURES FOR OFFICIAL FOREIGN TRAVEL, COMMITTEE ON WAYS AND MEANS, HOUSE OF REPRESENTATIVES, EXPENDED BETWEEN JAN. 1 AND APR. 23, 2001", [('M000590', 4.114285714285714), ('G000212', 4.0), ('H001034', 3.142857142857143), ('H000789', 3.0), ('M000485', 2.7)]
+Reason: first one is correct ('Michael'), second one is 'Gilman'
+
+Inconcl. 2001q2jun25.txt: "Hon. W. Watkins (Gilman Codel)","1/22/2001","1/25/2001","Italy","REPORT OF EXPENDITURES FOR OFFICIAL FOREIGN TRAVEL, COMMITTEE ON WAYS AND MEANS, HOUSE OF REPRESENTATIVES, EXPENDED BETWEEN JAN. 1 AND APR. 23, 2001", [('W000194', 4.266666666666667), ('G000212', 4.0), ('H000789', 3.0), ('C000556', 2.6666666666666665), ('C000846', 2.6285714285714286)]
+Reason: first one is correct ('Michael'), second one is 'Gilman'
+
+Inconcl. 2001q2jun25.txt: "Hon. C. Shaw (Rogers Codel)","4/5/2001","4/16/2001","France","REPORT OF EXPENDITURES FOR OFFICIAL FOREIGN TRAVEL, COMMITTEE ON WAYS AND MEANS, HOUSE OF REPRESENTATIVES, EXPENDED BETWEEN JAN. 1 AND APR. 23, 2001", [('R000395', 4.333333333333333), ('S000303', 4.16), ('R000572', 4.0), ('H000789', 3.2285714285714286), ('R000307', 2.857142857142857)]
+Reason: first one 'Harold Rogers', second 'E. Clay Shaw', third 'Mike Rogers'
+
+Inconcl. 2001q2jun25.txt: "Hon. R. Lewis (Rogers Codel)","4/5/2001","4/16/2001","Turkey","REPORT OF EXPENDITURES FOR OFFICIAL FOREIGN TRAVEL, COMMITTEE ON WAYS AND MEANS, HOUSE OF REPRESENTATIVES, EXPENDED BETWEEN JAN. 1 AND APR. 23, 2001", [('L000287', 4.4), ('R000395', 4.333333333333333), ('L000293', 4.266666666666667), ('L000274', 4.0), ('R000572', 4.0)]
+Reason: first 'John R. Lewis', second 'Harold Rogers'
+
+Inconcl. 2001q2jun25.txt: "Hon B. Cardin (Kolbe Codel)","4/18/2001","4/20/2001","Israel","REPORT OF EXPENDITURES FOR OFFICIAL FOREIGN TRAVEL, COMMITTEE ON WAYS AND MEANS, HOUSE OF REPRESENTATIVES, EXPENDED BETWEEN JAN. 1 AND APR. 23, 2001", [('C000141', 4.1), ('K000306', 4.0), ('H000789', 3.0), ('C001044', 2.8666666666666667), ('C000556', 2.6666666666666665)]
+Reason: first 'Benjamin Cardin', second 'Jim Kolbe'
+
+(Omitting a few other "(* Codel)")
+
+ERROR 2008q2apr23.txt: ['Hon. Robert E. (Bud) Crame', 'Jr', '2/8/2008'], invalid literal for int() with base 10: 'Jr'
+ERROR 2008q2apr23.txt: ['Hon. Robert E. (Bud) Crame', 'Jr', '2/17/2008'], invalid literal for int() with base 10: 'Jr'
+ERROR 2008q2apr23.txt: ['Hon. Robert E. (Bud) Crame', 'Jr', '2/18/2008'], invalid literal for int() with base 10: 'Jr'
+ERROR 2008q2apr23.txt: ['Hon. Robert E. (Bud) Crame', 'Jr', '2/22/2008'], invalid literal for int() with base 10: 'Jr'
+ERROR 2000q1feb02.txt: ['Hon. John Conyer', 'Jr', '9/10/2000'], invalid literal for int() with base 10: 'Jr'
+ERROR 2000q1feb02.txt: ['Hon. Jesse L. Jackso', 'Jr', '8/8/2000'], invalid literal for int() with base 10: 'Jr'
+ERROR 2000q1feb02.txt: ['Hon. Jesse L. Jackso', 'Jr', '8/9/2000'], invalid literal for int() with base 10: 'Jr'
+ERROR 2000q1feb02.txt: ['Hon. Jesse L. Jackso', 'Jr', '8/11/2000'], invalid literal for int() with base 10: 'Jr'
+ERROR 2000q1feb02.txt: ['Hon. Jesse L. Jackso', 'Jr', '8/13/2000'], invalid literal for int() with base 10: 'Jr'
+ERROR 2000q1feb02.txt: ['Hon. Jesse L. Jackso', 'Jr', '8/15/2000'], invalid literal for int() with base 10: 'Jr'
+ERROR 2007q1feb16.txt: ['Hon. Devin Nunes', '12/N/2007', '12/12/2007'], invalid literal for int() with base 10: 'N'
+
+Missing 2007q1feb16.txt: "Hon. Maryam Sabbaghian","12/09/2007","12/12/2007","Portugal","REPORT OF EXPENDITURES FOR OFFICIAL FOREIGN TRAVEL, DELEGATION TO PORTUGAL, HOUSE OF REPRESENTATIVES, EXPENDED BETWEEN DEC. 9 AND DEC. 12, 2006", [('M000133', 2.6666666666666665), ('H001034', 2.6285714285714286), ('H001042', 2.2666666666666666), ('M001169', 2.04), ('S001168', 2.0)]
+Reason: staff
+
+Missing 2007q1feb16.txt: "Hon. Henry Bonilla","7/13/2007","7/15/2007","United Kingdom","REPORT OF EXPENDITURES FOR OFFICIAL FOREIGN TRAVEL, COMMITTEE ON AGRICULTURE, HOUSE OF REPRESENTATIVES, EXPENDED BETWEEN OCT. 1 AND DEC. 31, 2006", [('H000874', 2.533333333333333), ('B001235', 2.5142857142857142), ('H001034', 2.4), ('B000461', 2.2857142857142856), ('B000652', 2.2857142857142856)]
+Reason: not legislator at time of travel
+
+Missing 2007q1feb16.txt: "Hon. John Sweeney","7/13/2007","7/15/2007","United Kingdom","REPORT OF EXPENDITURES FOR OFFICIAL FOREIGN TRAVEL, COMMITTEE ON AGRICULTURE, HOUSE OF REPRESENTATIVES, EXPENDED BETWEEN OCT. 1 AND DEC. 31, 2006", [('J000288', 2.7857142857142856), ('J000284', 2.7555555555555555), ('H001034', 2.4), ('J000255', 2.4), ('J000174', 2.4)]
+Reason: not legislator at time of travel
+
+Inconcl. 2007q1feb16.txt: "Hon. Martin Sabo","8/12/2007","8/15/2007","Norway","REPORT OF EXPENDITURES FOR OFFICIAL FOREIGN TRAVEL, COMMITTEE ON AGRICULTURE, HOUSE OF REPRESENTATIVES, EXPENDED BETWEEN OCT. 1 AND DEC. 31, 2006", [('M001162', 3.0), ('M000303', 2.7666666666666666), ('H001034', 2.7333333333333334), ('M001163', 2.6666666666666665), ('H001042', 2.4)]
+Reason: not legislator at time of travel
+
+Missing 2007q1feb16.txt: "Hon. Don Sherwood","8/6/2007","8/7/2007","Kuwait","REPORT OF EXPENDITURES FOR OFFICIAL FOREIGN TRAVEL, COMMITTEE ON AGRICULTURE, HOUSE OF REPRESENTATIVES, EXPENDED BETWEEN OCT. 1 AND DEC. 31, 2006", [('H001034', 2.4), ('H000666', 2.25), ('S001171', 2.16), ('D000601', 2.1333333333333333), ('H001032', 2.1333333333333333)]
+Reason: not legislator at time of travel
+
+Missing 2007q1feb16.txt: "Hon. Jim Kolbe","8/24/2007","8/25/2007","Estonia","REPORT OF EXPENDITURES FOR OFFICIAL FOREIGN TRAVEL, COMMITTEE ON AGRICULTURE, HOUSE OF REPRESENTATIVES, EXPENDED BETWEEN OCT. 1 AND DEC. 31, 2006", [('K000305', 2.65), ('K000363', 2.6), ('K000366', 2.4), ('H001034', 2.4), ('K000288', 2.1515151515151514)]
+Reason: not legislator at time of travel
+
+Missing 2007q1feb16.txt: "Hon. Joel Hefley","10/25/2007","10/28/2007","Italy","REPORT OF EXPENDITURES FOR OFFICIAL FOREIGN TRAVEL, COMMITTEE ON ARMED SERVICES, HOUSE OF REPRESENTATIVES, EXPENDED BETWEEN OCT. 1 AND DEC. 31, 2006", [('H000762', 2.6666666666666665), ('H001041', 2.6666666666666665), ('H001034', 2.4), ('J000255', 2.4), ('J000284', 2.4)]
+Reason: not legislator at time of travel
+
+Inconcl. 2007q1feb16.txt: "Hon. Michael G. Oxley","10/25/2007","10/30/2007","Italy","REPORT OF EXPENDITURES FOR OFFICIAL FOREIGN TRAVEL, COMMITTEE ON FINANCIAL SERVICES, HOUSE OF REPRESENTATIVES, EXPENDED BETWEEN OCT. 1 AND DEC. 31, 2006", [('H001034', 3.2), ('M001167', 3.16), ('M001149', 2.9904761904761905), ('O000085', 2.4), ('O000007', 2.4)]
+Reason: not legislator at time of travel
+
+Missing 2007q1feb16.txt: "Hon. Jim Gibbons","7/15/2007","7/16/2007","Canada","REPORT OF EXPENDITURES FOR OFFICIAL FOREIGN TRAVEL, COMMITTEE ON HOMELAND SECURITY, HOUSE OF REPRESENTATIVES, EXPENDED BETWEEN JULY 1 AND SEPT. 30, 2006", [('H001034', 2.4), ('H000712', 2.0), ('H000666', 2.0), ('G000554', 2.0), ('H001042', 2.0)]
+Reason: not legislator at time of travel
+
+Missing 2007q1feb16.txt: "Hon. Rob Simmons","7/15/2007","7/16/2007","Canada","REPORT OF EXPENDITURES FOR OFFICIAL FOREIGN TRAVEL, COMMITTEE ON HOMELAND SECURITY, HOUSE OF REPRESENTATIVES, EXPENDED BETWEEN JULY 1 AND SEPT. 30, 2006", [('S001148', 2.857142857142857), ('S000250', 2.5), ('S001141', 2.5), ('H001034', 2.4), ('S000364', 2.2857142857142856)]
+Reason: staff
+
+Missing 2007q1feb16.txt: "Hon. Henry Hyde","8/9/2007","8/11/2007","South Korea","REPORT OF EXPENDITURES FOR OFFICIAL FOREIGN TRAVEL, COMMITTEE ON INTERNATIONAL RELATIONS, HOUSE OF REPRESENTATIVES, EXPENDED BETWEEN JULY 1 AND  SEPT. 30, 2006", [('H000874', 2.533333333333333), ('H001034', 2.4), ('H001029', 2.4), ('H001043', 2.4), ('H001040', 2.0)]
+Reason: not legislator at time of travel
+
+Inconcl. 2007q1feb16.txt: "Hon. Michael Ennis","9/1/2007","9/3/2007","Middle East","REPORT OF EXPENDITURES FOR OFFICIAL FOREIGN TRAVEL, PERMANENT SELECT COMMITTEE ON INTELLIGENCE, HOUSE OF REPRESENTATIVES, EXPENDED BETWEEN JULY 1 AND SEPT. 30, 2006", [('M001167', 3.24), ('H001034', 3.2), ('E000285', 3.2), ('M001149', 2.9904761904761905), ('H001042', 2.342857142857143)]
+Reason: not legislator
+
+Missing 2009q3sep16.txt: "Hon. Joshua Holly","4/5/2009","4/6/2009","Kuwait","REPORT OF EXPENDITURES FOR OFFICIAL FOREIGN TRAVEL, COMMITTEE ON ARMED SERVICES, HOUSE OF REPRESENTATIVES, EXPENDED BETWEEN APR. 1 AND  JUNE 30, 2009", [('H001039', 2.8), ('J000288', 2.5342857142857147), ('H000874', 2.533333333333333), ('H001034', 2.4), ('H000067', 2.4)]
+Reason: (?) not legislator
+
+Missing 2009q3sep16.txt: "Hon. William H. Natter","4/15/2009","4/16/2009","Burkina Faso","REPORT OF EXPENDITURES FOR OFFICIAL FOREIGN TRAVEL, COMMITTEE ON ARMED SERVICES, HOUSE OF REPRESENTATIVES, EXPENDED BETWEEN APR. 1 AND  JUNE 30, 2009", [('N000002', 2.6666666666666665), ('H001034', 2.4), ('W000215', 2.0342857142857143), ('H000712', 2.0), ('H000874', 2.0)]
+Reason: not legislator
+
+Missing 2009q3sep16.txt: "Hon. Thomas Hawley","4/15/2009","4/16/2009","Burkina Faso","REPORT OF EXPENDITURES FOR OFFICIAL FOREIGN TRAVEL, COMMITTEE ON ARMED SERVICES, HOUSE OF REPRESENTATIVES, EXPENDED BETWEEN APR. 1 AND  JUNE 30, 2009", [('T000460', 2.5), ('T000467', 2.5), ('T000193', 2.5), ('H001034', 2.4), ('T000465', 2.2857142857142856)]
+Reason: not legislator
+
+ERROR 2009q3sep16.txt: ['Hon. John Conyer', 'Jr', '4/6/2009'], invalid literal for int() with base 10: 'Jr'
+ERROR 2009q3sep16.txt: ['Hon. John Conyer', 'Jr', '4/7/2009'], invalid literal for int() with base 10: 'Jr'
+
+Missing 2009q3sep16.txt: "Hon. Cathy Wiblemo","4/13/2009","4/17/2009","Kuwait","REPORT OF EXPENDITURES FOR OFFICIAL FOREIGN TRAVEL, COMMITTEE ON VETERANS' AFFAIRS, HOUSE OF REPRESENTATIVES, EXPENDED BETWEEN APR. 1 AND JUNE 30, 2009", [('C001049', 2.6285714285714286), ('W000801', 2.5142857142857142), ('H001034', 2.4), ('C001070', 2.4), ('W000795', 2.2857142857142856)]
+Reason: staff director
+
+ERROR 2010q3sep15.txt: ['Hon. Frank Kratovi', 'Jr', '5/29/2010'], invalid literal for int() with base 10: 'Jr'
+ERROR 2010q3sep15.txt: ['Hon. Frank Kratovi', 'Jr', '5/30/2010'], invalid literal for int() with base 10: 'Jr'
+ERROR 2010q3sep15.txt: ['Hon. David Price', '6//2010', '6/8/2010'], invalid literal for int() with base 10: ''
+
+Inconcl. 2010q3sep15.txt: "Hon. Lorraine Miller","7/3/2010","7/4/2010","Senegal","REPORT OF EXPENDITURES FOR OFFICIAL FOREIGN TRAVEL, DELEGATION TO SENEGAL, LIBERIA, KENYA, TANZANIA, AND MALI, HOUSE OF REPRESENTATIVES, EXPENDED BETWEEN JULY 3 AND JULY 15, 2010", [('M001144', 4.0), ('M001154', 4.0), ('M000725', 4.0), ('M001150', 4.0), ('M001139', 4.0)]
+Reason: Clerk of the House
+
+ERROR 2010q3sep15.txt: ['Hon. Keith Ellison', '3//2010', '3/3/2010'], invalid literal for int() with base 10: ''
+ERROR 2010q3sep15.txt: ['Hon. Keith Ellison', '3//2010', '4//2010'], invalid literal for int() with base 10: ''
+ERROR 2010q3sep15.txt: ['Hon. Keith Ellison', '4/2010', '4//2010'], not enough values to unpack (expected 3, got 2)
+ERROR 2010q3sep15.txt: ['Hon. Keith Ellison', '4/2010', '4//2010'], not enough values to unpack (expected 3, got 2)
+ERROR 2010q3sep15.txt: ['Hon. Eni F.H. Faleomavaega', '2//2010', '2/1/2010'], invalid literal for int() with base 10: ''
+ERROR 2010q3sep15.txt: ['Hon. Eni F.H. Faleomavaega', '2//2010', '2/1/2010'], invalid literal for int() with base 10: ''
+ERROR 2010q3sep15.txt: ['Hon. Eni F.H. Faleomavaega', '2//2010', '2/2/2010'], invalid literal for int() with base 10: ''
+ERROR 2010q3sep15.txt: ['Hon. Jeff Flake', '2/2010', '2//2010'], not enough values to unpack (expected 3, got 2)
+ERROR 2010q3sep15.txt: ['Hon. Sheila Jackson Lee', '3//2010', '3/3/2010'], invalid literal for int() with base 10: ''
+ERROR 2010q3sep15.txt: ['Hon. Sheila Jackson Lee', '3//2010', '3/3/2010'], invalid literal for int() with base 10: ''
+ERROR 2010q3sep15.txt: ['Hon. Sheila Jackson Lee', '3//2010', '4//2010'], invalid literal for int() with base 10: ''
+ERROR 2010q3sep15.txt: ['Hon. Sheila Jackson Lee', '4/2010', '4//2010'], not enough values to unpack (expected 3, got 2)
+ERROR 2001q4dec17.txt: ['Hon. Richard A. Gephardt', '11/2001', '1/1/2001'], not enough values to unpack (expected 3, got 2)
+ERROR 2001q4dec17.txt: ['Hon. Richard A. Gephardt', '13/2001', '1/1/2001'], not enough values to unpack (expected 3, got 2)
+ERROR 2001q4dec17.txt: ['Hon. Richard A. Gephardt', '15/2001', '1/1/2001'], not enough values to unpack (expected 3, got 2)
+ERROR 2001q4dec17.txt: ['Hon. Ray LaHood', '11/2001', '1/1/2001'], not enough values to unpack (expected 3, got 2)
+ERROR 2001q4dec17.txt: ['Hon. Ray LaHood', '13/2001', '1/1/2001'], not enough values to unpack (expected 3, got 2)
+ERROR 2001q4dec17.txt: ['Hon. Ray LaHood', '15/2001', '1/1/2001'], not enough values to unpack (expected 3, got 2)
+ERROR 2001q4dec17.txt: ['Hon. Marion Berry', '11/2001', '1/1/2001'], not enough values to unpack (expected 3, got 2)
+ERROR 2001q4dec17.txt: ['Hon. Marion Berry', '13/2001', '1/1/2001'], not enough values to unpack (expected 3, got 2)
+ERROR 2001q4dec17.txt: ['Hon. Marion Berry', '15/2001', '1/1/2001'], not enough values to unpack (expected 3, got 2)
+ERROR 2001q4dec17.txt: ['Hon. Tim Holden', '11/2001', '1/1/2001'], not enough values to unpack (expected 3, got 2)
+ERROR 2001q4dec17.txt: ['Hon. Tim Holden', '13/2001', '1/1/2001'], not enough values to unpack (expected 3, got 2)
+ERROR 2001q4dec17.txt: ['Hon. Tim Holden', '15/2001', '1/1/2001'], not enough values to unpack (expected 3, got 2)
+ERROR 2001q4dec17.txt: ['Hon. Tom Lantos', '11/2001', '1/1/2001'], not enough values to unpack (expected 3, got 2)
+ERROR 2001q4dec17.txt: ['Hon. Tom Lantos', '13/2001', '1/1/2001'], not enough values to unpack (expected 3, got 2)
+ERROR 2001q4dec17.txt: ['Hon. Tom Lantos', '15/2001', '1/1/2001'], not enough values to unpack (expected 3, got 2)
+ERROR 2001q4dec17.txt: ['Hon. Nita Lowey', '11/2001', '1/1/2001'], not enough values to unpack (expected 3, got 2)
+ERROR 2001q4dec17.txt: ['Hon. Nita Lowey', '13/2001', '1/1/2001'], not enough values to unpack (expected 3, got 2)
+ERROR 2001q4dec17.txt: ['Hon. Nita Lowey', '15/2001', '1/1/2001'], not enough values to unpack (expected 3, got 2)
+ERROR 2001q4dec17.txt: ['Hon. Charles Rangel', '11/2001', '1/1/2001'], not enough values to unpack (expected 3, got 2)
+ERROR 2001q4dec17.txt: ['Hon. Charles Rangel', '13/2001', '1/1/2001'], not enough values to unpack (expected 3, got 2)
+ERROR 2001q4dec17.txt: ['Hon. Charles Rangel', '15/2001', '1/1/2001'], not enough values to unpack (expected 3, got 2)
+ERROR 2001q4dec17.txt: ['Hon. John Tanner', '11/2001', '1/1/2001'], not enough values to unpack (expected 3, got 2)
+ERROR 2001q4dec17.txt: ['Hon. John Tanner', '13/2001', '1/1/2001'], not enough values to unpack (expected 3, got 2)
+ERROR 2001q4dec17.txt: ['Hon. John Tanner', '15/2001', '1/1/2001'], not enough values to unpack (expected 3, got 2)
+ERROR 2001q4dec17.txt: ['Hon. Karen Thurman', '11/2001', '1/1/2001'], not enough values to unpack (expected 3, got 2)
+ERROR 2001q4dec17.txt: ['Hon. Karen Thurman', '13/2001', '1/1/2001'], not enough values to unpack (expected 3, got 2)
+ERROR 2001q4dec17.txt: ['Hon. Karen Thurman', '15/2001', '1/1/2001'], not enough values to unpack (expected 3, got 2)
+ERROR 2001q4dec17.txt: ['Hon. Christopher Smit', 'Chairman', '7/5/2001'], invalid literal for int() with base 10: 'Chairman'
+ERROR 2001q4dec17.txt: ['Hon. J.C. Watt', 'Jr', '8/27/2001'], invalid literal for int() with base 10: 'Jr'
+ERROR 2001q4dec17.txt: ['Hon. J.C. Watt', 'Jr', '8/27/2001'], invalid literal for int() with base 10: 'Jr'
+ERROR 2001q4dec17.txt: ['Hon. J.C. Watt', 'Jr', '8/29/2001'], invalid literal for int() with base 10: 'Jr'
+ERROR 2001q4dec17.txt: ['Hon. J.C. Watt', 'Jr', '8/30/2001'], invalid literal for int() with base 10: 'Jr'
+
+Missing 2016q4nov14.txt: "Hon. Ward McCarragher","6/26/2016","6/27/2016","Panama","REPORT OF EXPENDITURES FOR OFFICIAL FOREIGN TRAVEL, COMMITTEE ON TRANSPORTATION AND INFRASTRUCTURE, HOUSE OF REPRESENTATIVES, EXPENDED BETWEEN APR. 1 AND JUNE 30, 2016", [('H001034', 2.690909090909091), ('W000819', 2.2181818181818183), ('W000805', 2.2181818181818183), ('W000187', 2.2181818181818183), ('H001042', 2.2181818181818183)]
+Reason: staff
+
+Inconcl. 2016q4nov14.txt: "Hon. Stephen Collin McCune","6/26/2016","6/27/2016","Panama","REPORT OF EXPENDITURES FOR OFFICIAL FOREIGN TRAVEL, COMMITTEE ON TRANSPORTATION AND INFRASTRUCTURE, HOUSE OF REPRESENTATIVES, EXPENDED BETWEEN APR. 1 AND JUNE 30, 2016", [('C001035', 3.723809523809524), ('C001092', 3.4285714285714284), ('C001093', 3.4285714285714284), ('H001034', 2.742857142857143), ('M000303', 2.7238095238095235)]
+Reason: staff
+
+Inconcl. 2016q4nov14.txt: "Hon. John Frederick Miller","6/26/2016","6/27/2016","Panama","REPORT OF EXPENDITURES FOR OFFICIAL FOREIGN TRAVEL, COMMITTEE ON TRANSPORTATION AND INFRASTRUCTURE, HOUSE OF REPRESENTATIVES, EXPENDED BETWEEN APR. 1 AND JUNE 30, 2016", [('M001144', 4.2), ('M001150', 4.0), ('H001034', 2.9), ('H001061', 2.8), ('J000288', 2.7857142857142856)]
+Reason: staff
+
+Inconcl. 2016q4nov14.txt: "Hon. William Robert Woodall","6/26/2016","6/27/2016","Panama","REPORT OF EXPENDITURES FOR OFFICIAL FOREIGN TRAVEL, COMMITTEE ON TRANSPORTATION AND INFRASTRUCTURE, HOUSE OF REPRESENTATIVES, EXPENDED BETWEEN APR. 1 AND JUNE 30, 2016", [('W000810', 4.4), ('W000816', 4.033333333333333), ('R000307', 3.4285714285714284), ('R000395', 3.0), ('R000603', 2.6666666666666665)]
+Reason: first one is correct, second is 'Roger Williams'
+
+Missing 2016q4nov14.txt: "Hon. Helena Zyblikewycz","6/26/2016","6/27/2016","Panama","REPORT OF EXPENDITURES FOR OFFICIAL FOREIGN TRAVEL, COMMITTEE ON TRANSPORTATION AND INFRASTRUCTURE, HOUSE OF REPRESENTATIVES, EXPENDED BETWEEN APR. 1 AND JUNE 30, 2016", [('H001061', 2.6666666666666665), ('H001041', 2.6666666666666665), ('H001034', 2.4), ('H001058', 2.0), ('H001067', 2.0)]
+Reason: staff
+
+Inconcl. 1996q1jan30.txt: "Hon. John Macke","11/30/1996","12/1/1996","North Ireland","REPORT OF EXPENDITURES FOR OFFICIAL FOREIGN TRAVEL, DELEGATION TO NORTHERN IRELAND AND IRELAND, U.S. HOUSE OF REPRESENTATIVES, EXPENDED BETWEEN NOV. 29 AND DEC. 2, 1995", [('M000019', 3.2), ('M000834', 3.0857142857142854), ('H000789', 3.0), ('M000508', 2.933333333333333), ('M000133', 2.7666666666666666)]
+Reason: unclear
+
+Inconcl. 1996q1jan30.txt: "Hon. Tom O'Donnell","11/30/1996","12/1/1996","North Ireland","REPORT OF EXPENDITURES FOR OFFICIAL FOREIGN TRAVEL, DELEGATION TO NORTHERN IRELAND AND IRELAND, U.S. HOUSE OF REPRESENTATIVES, EXPENDED BETWEEN NOV. 29 AND DEC. 2, 1995", [('H000789', 3.0), ('D000355', 2.857142857142857), ('D000217', 2.7142857142857144), ('H000712', 2.533333333333333), ('H000206', 2.333333333333333)]
+Reason: unclear
+
+Inconcl. 2011q1feb14.txt: "Hon. Peter Hoekstra","10/03/2011","10/06/2011","Asia","REPORT OF EXPENDITURES FOR OFFICIAL FOREIGN TRAVEL, PERMANENT SELECT COMMITTEE ON INTELLIGENCE, HOUSE OF REPRESENTATIVES, EXPENDED BETWEEN OCT. 1 AND DEC. 31, 2010", [('P000595', 3.3333333333333335), ('P000265', 3.2), ('P000258', 2.5), ('P000587', 2.4), ('H001034', 2.4)]
+Reason: not legislator at time of travel
+
+ERROR 1999q1feb08.txt: ['Hon. George E. Brow', 'Jr', '12/5/1999'], invalid literal for int() with base 10: 'Jr'
+ERROR 1999q3jul19.txt: ['Hon. Amory Houghto', 'Jr', '5/28/1999'], invalid literal for int() with base 10: 'Jr'
+ERROR 1999q3jul19.txt: ['Hon. Amory Houghto', 'Jr', '5/30/1999'], invalid literal for int() with base 10: 'Jr'
+ERROR 1999q3jul19.txt: ['Hon. Amory Houghto', 'Jr', '5/31/1999'], invalid literal for int() with base 10: 'Jr'
+ERROR 2000q2may24.txt: ['Hon. John Conyer', 'Jr', '2/11/2000'], invalid literal for int() with base 10: 'Jr'
+ERROR 1997q2apr23.txt: ['Hon. F. James Sensenbrenne', 'Jr', '12/12/1997'], invalid literal for int() with base 10: 'Jr'
+ERROR 2017q1jan24.txt: ['Hon. Mark Sanfor', 'Jr', '10/1/2017'], invalid literal for int() with base 10: 'Jr'
+ERROR 2017q1jan24.txt: ['Hon. Mark Sanfor', 'Jr', '10/3/2017'], invalid literal for int() with base 10: 'Jr'
+ERROR 2017q1jan24.txt: ['Hon. Mark Sanfor', 'Jr', '10/4/2017'], invalid literal for int() with base 10: 'Jr'
+ERROR 2017q1jan24.txt: ['Hon. Mark Sanfor', 'Jr', '10/6/2017'], invalid literal for int() with base 10: 'Jr'
+ERROR 2000q4oct19.txt: ['Hon. Collin Peterson', '7/29//2000', '7/31//2000'], invalid literal for int() with base 10: ''
+ERROR 2000q4oct19.txt: ['Hon. Collin Peterson', '7/31//2000', '8/1//2000'], invalid literal for int() with base 10: ''
+ERROR 2000q4oct19.txt: ['Hon. Collin Peterson', '8/1//2000', '8/2//2000'], invalid literal for int() with base 10: ''
+ERROR 2000q4oct19.txt: ['Hon. Collin Peterson', '8/22//2000', '8/25//2000'], invalid literal for int() with base 10: ''
+ERROR 2000q4oct19.txt: ['Hon. Collin Peterson', '8/25//2000', '8/28//2000'], invalid literal for int() with base 10: ''
+ERROR 2000q4oct19.txt: ['Hon. Collin Peterson', '8/28//2000', '8/30//2000'], invalid literal for int() with base 10: ''
+ERROR 2000q4oct19.txt: ['Hon. Collin Peterson', '8/30//2000', '8/31//2000'], invalid literal for int() with base 10: ''
+ERROR 2000q4oct19.txt: ['Hon. Collin Peterson', '8/31//2000', '8/31//2000'], invalid literal for int() with base 10: ''
+ERROR 2003q3jul16.txt: ['Hon. Amo Houghto', 'Chairman', '5/15/2003'], invalid literal for int() with base 10: 'Chairman'
+ERROR 2003q3jul16.txt: ['Hon. Amory Houghto', 'Jr', '5/24/2003'], invalid literal for int() with base 10: 'Jr'
+ERROR 2003q3jul16.txt: ['Hon. Amory Houghto', 'Jr', '5/25/2003'], invalid literal for int() with base 10: 'Jr'
+ERROR 2003q3jul16.txt: ['Hon. Amory Houghto', 'Jr', '5/30/2003'], invalid literal for int() with base 10: 'Jr'
+
+Inconcl. 2003q3jul16.txt: "Hon. Mary N. Bono","5/24/2003","5/24/2003","Cape Verde","", [('B000611', 3.0), ('B001228', 2.8), ('B001235', 2.7199999999999998), ('M000133', 2.6666666666666665), ('H001034', 2.65)]
+Reason: the yaml record has lastname 'Bono Mack'
+
+Inconcl. 1995q4nov18.txt: "Hon. L.F. Payne","8/4/1995","8/5/1995","Costa Rica","REPORT OF EXPENDITURES FOR OFFICIAL FOREIGN TRAVEL, COMMITTEE ON WAYS AND MEANS, HOUSE OF REPRESENTATIVES, EXPENDED BETWEEN JULY 1 AND SEPT. 30, 1995", [('P000152', 4.21), ('P000149', 4.0), ('P000148', 3.2), ('H000789', 3.0), ('P000034', 2.4457142857142857)]
+Reason: first one is correct, second is another Payne
+
+Inconcl. 1995q4nov18.txt: "Hon. Bob Dornan","8/22/1995","8/31/1995","Europe","REPORT OF EXPENDITURES FOR OFFICIAL FOREIGN TRAVEL, PERMANENT SELECT COMMITTEE ON INTELLIGENCE, HOUSE OF REPRESENTATIVES, EXPENDED BETWEEN JULY 1 AND SEPT. 30, 1995", [('D000435', 4.0), ('D000432', 3.6533333333333333), ('H000789', 3.0), ('D000533', 2.6666666666666665), ('H000666', 2.3333333333333335)]
+Reason: yaml record 'Robert Dornan'
+
+Missing 2013q1feb25.txt: "Hon. Todd Platts","10/13/2013","10/17/2013","India","REPORT OF EXPENDITURES FOR OFFICIAL FOREIGN TRAVEL, COMMITTEE ON ARMED SERVICES, HOUSE OF REPRESENTATIVES, EXPENDED BETWEEN OCT. 1 AND DEC. 31, 2012", [('P000373', 2.6666666666666665), ('H001034', 2.4), ('P000608', 2.1333333333333333), ('P000595', 2.0), ('H001067', 2.0)]
+Reason: not legislator at time of travel
+
+Inconcl. 2013q1feb25.txt: "Hon. Russ Carnahan","10/6/2013","10/7/2013","Ghana","REPORT OF EXPENDITURES FOR OFFICIAL FOREIGN TRAVEL, COMMITTEE ON FOREIGN AFFAIRS, HOUSE OF REPRESENTATIVES, EXPENDED BETWEEN OCT. 1, AND DEC. 31, 2012", [('R000593', 3.0), ('R000515', 3.0), ('H001032', 2.6), ('C001045', 2.5), ('H001034', 2.4)]
+Reason: not legislator at time of travel
+
+Inconcl. 2013q1feb25.txt: "Hon. David Dreier","10/6/2013","10/13/2013","Africa","REPORT OF EXPENDITURES FOR OFFICIAL FOREIGN TRAVEL, COMMITTEE ON RULES, HOUSE OF REPRESENTATIVES, EXPENDED BETWEEN OCT. 1 AND DEC. 31, 2012", [('D000096', 3.3333333333333335), ('D000598', 3.2), ('D000619', 3.2), ('H001034', 2.4), ('H001032', 2.08)]
+Reason: not legislator at time of travel
+
+Inconcl. 2013q1feb25.txt: "Hon. Brad Miller","10/14/2013","10/15/2013","India","REPORT OF EXPENDITURES FOR OFFICIAL FOREIGN TRAVEL, COMMITTEE ON SCIENCE, SPACE, AND TECHNOLOGY, HOUSE OF REPRESENTATIVES, EXPENDED BETWEEN OCT. 1 AND DEC. 31, 2012", [('M001144', 4.0), ('M001150', 4.0), ('M001139', 4.0), ('M000725', 4.0), ('B001227', 3.2)]
+Reason: not legislator at time of travel
+
+Inconcl. 1997q3sep03.txt: "Hon. Al Hastings","3/24/1997","3/26/1997","Korea","", [('H000324', 4.32), ('H000329', 4.0), ('H000789', 3.0), ('H000725', 2.5), ('H001014', 2.2666666666666666)]
+Reason: first one firstname 'Alcee', second one is another Hastings
+
+ERROR 1997q3sep03.txt: ['Hon. Amory Houghto', 'Jr', '6/27/1997'], invalid literal for int() with base 10: 'Jr'
+ERROR 1998q1feb24.txt: ['Hon. Jesse Jackso', 'Jr', '10/2/1998'], invalid literal for int() with base 10: 'Jr'
+ERROR 1998q1feb24.txt: ['Hon. Jesse Jackso', 'Jr', '10/4/1998'], invalid literal for int() with base 10: 'Jr'
+
+Inconcl. 1998q1feb24.txt: "Hon. Sonny Bono","10/12/1998","10/16/1998","Russia","REPORT OF EXPENDITURES FOR OFFICIAL FOREIGN TRAVEL, COMMITTEE ON NATIONAL SECURITY, HOUSE OF REPRESENTATIVES, EXPENDED BETWEEN OCT. 1 AND DEC. 31, 1997", [('H000789', 3.2285714285714286), ('B000611', 3.08), ('B000619', 2.6666666666666665), ('B000944', 2.6285714285714286), ('B000918', 2.4)]
+Reason: ?
+
+ERROR 1996q3jul23.txt: ['Hon. E. Clay Sha', 'Jr', '4/7/1996'], invalid literal for int() with base 10: 'Jr'
+ERROR 1996q3jul23.txt: ['Hon. E. Clay Sha', 'Jr', '4/9/1996'], invalid literal for int() with base 10: 'Jr'
+ERROR 1996q3jul23.txt: ['Hon. E. Clay Sha', 'Jr', '4/11/1996'], invalid literal for int() with base 10: 'Jr'
+
+Inconcl. 1996q2jun04.txt: "Hon. Bob Dornan","3/1/1996","3/2/1996","Italy","REPORT OF EXPENDITURES FOR OFFICIAL FOREIGN TRAVEL, DELEGATION TO ITALY, BOSNIA, CROATIA, AND HUNGARY, HOUSE OF REPRESENTATIVES, EXPENDED BETWEEN FEB. 29 AND MAR. 4, 1996", [('D000435', 4.0), ('D000432', 3.6533333333333333), ('H000789', 3.0), ('D000533', 2.6666666666666665), ('H000666', 2.3333333333333335)]
+Reason: first one correct, second one last name 'Dorgan'
+
+Inconcl. 1996q2jun04.txt: "Hon. Richard Hastings","3/1/1996","3/2/1996","Italy","REPORT OF EXPENDITURES FOR OFFICIAL FOREIGN TRAVEL, DELEGATION TO ITALY, BOSNIA, CROATIA, AND HUNGARY, HOUSE OF REPRESENTATIVES, EXPENDED BETWEEN FEB. 29 AND MAR. 4, 1996", [('H000329', 4.0), ('H000324', 4.0), ('H000789', 3.0), ('R000229', 2.8), ('H000725', 2.5)]
+Reason: the yaml record didn't list 'Richard Norman', only 'Doc Hastings'
+
+Missing 2009q2jun23.txt: "Hon. Mariah Sixkiller","5/26/2009","5/29/2009","Denmark","REPORT OF EXPENDITURES FOR OFFICIAL TRAVEL, DELEGATION TO DENMARK, EXPENDED BETWEEN MAY 26 AND MAY 29, 2009", [('H001034', 2.742857142857143), ('H001042', 2.4), ('M001134', 2.1777777777777776), ('M001178', 2.088888888888889), ('M001169', 2.0444444444444443)]
+Reason: staff
+
+Missing 2009q2jun23.txt: "Hon. Brian Monaghan","5/08/2009","5/11/2009","Qatar","REPORT OF EXPENDITURES FOR OFFICIAL TRAVEL, DELEGATION TO JORDAN, QATAR, UNITED KINGDOM, EXPENDED BETWEEN MAY 7 AND MAY 12, 2009", [('B000410', 2.933333333333333), ('B001235', 2.7199999999999998), ('H001034', 2.7), ('B001253', 2.6), ('M000844', 2.58)]
+Reason: Monahan? see previous mentions
+
+Inconcl. 2006q1mar07.txt: "Hon. Mark Foley","12/20/2006","12/22/2006","Guatemala","REPORT OF EXPENDITURES FOR OFFICIAL FOREIGN TRAVEL, DELEGATION TO COSTA RICA, EL SALVADOR, GUATEMALA, DOMINICAN REPUBLIC, HOUSE OF REPRESENTATIVES, EXPENDED BETWEEN DEC. 19 AND DEC. 23, 2005", [('M001155', 3.0), ('H001034', 2.9), ('M000133', 2.6666666666666665), ('F000444', 2.4), ('F000445', 2.0)]
+Reason: not legislator at time of travel
+
+Inconcl. 2006q1mar07.txt: "Hon. David Nelson","8/25/2006","9/1/2006","England","REPORT OF EXPENDITURES FOR OFFICIAL FOREIGN TRAVEL, COMMITTEE ON ENERGY AND COMMERCE, HOUSE OF REPRESENTATIVES, EXPENDED BETWEEN JULY 1 AND SEPT. 30, 2005", [('N000180', 4.0), ('N000032', 4.0), ('D000603', 3.2), ('D000598', 3.2), ('D000114', 3.2)]
+Reason: unclear, neither of the two Nelsons found seems related
+
+Missing 2006q1mar07.txt: "Hon. J. Kevin Carroll","12/4/2006","12/9/2006","Canada","REPORT OF EXPENDITURES FOR OFFICIAL FOREIGN TRAVEL, COMMITTEE ON SCIENCE, HOUSE OF REPRESENTATIVES, EXPENDED BETWEEN OCT. 1 AND DEC. 31, 2005", [('C001038', 2.619047619047619), ('K000363', 2.6), ('C001051', 2.4857142857142858), ('K000188', 2.48), ('C000191', 2.4457142857142857)]
+Reason: staff
+
+ERROR 1999q3aug05.txt: ['Hon. John Conyer', 'Jr', '6/30/1999'], invalid literal for int() with base 10: 'Jr'
+ERROR 1999q3aug05.txt: ['Hon. George R. Nethercut', 'Jr', '4/6/1999'], invalid literal for int() with base 10: 'Jr'
+ERROR 1999q3aug05.txt: ['Hon. George R. Nethercut', 'Jr', '4/8/1999'], invalid literal for int() with base 10: 'Jr'
+ERROR 1999q3aug05.txt: ['Hon. George R. Nethercut', 'Jr', '4/9/1999'], invalid literal for int() with base 10: 'Jr'
+ERROR 1999q3aug05.txt: ['Hon. George R. Nethercut', 'Jr', '4/9/1999'], invalid literal for int() with base 10: 'Jr'
+
+Inconcl. 1999q3aug05.txt: "Hon. Roybal-Allard","5/28/1999","5/30/1999","Venezuela","REPORT OF EXPENDITURES FOR OFFICIAL FOREIGN TRAVEL, COMMITTEE ON APPROPRIATIONS, HOUSE OF REPRESENTATIVES, EXPENDED BETWEEN APR. 1, AND JUNE 30, 1999", [('A000109', 4.0), ('R000486', 4.0), ('H000789', 3.0), ('A000357', 2.1333333333333333), ('H001032', 2.1333333333333333)]
+Reason: second one is probably the right one, first one has lastname Allard, "Wayne Allard"
+
+ERROR 1997q2may13.txt: ['Hon. Constance Morella', '3\\)/1997', '1/18/1997'], invalid literal for int() with base 10: '3\\)'
+ERROR 2002q2apr29.txt: ['Hon. Sanford D. Bisho', 'Jr', '7/14/2002'], invalid literal for int() with base 10: 'Jr'
+ERROR 2002q2apr29.txt: ['Hon. J.C. Watt', 'Jr', '11/5/2002'], invalid literal for int() with base 10: 'Jr'
+
+Inconcl. 2011q3aug16.txt: "Hon. Chris Murphy","4/30/2011","5/2/2011","Georgia","REPORT OF EXPENDITURES FOR OFFICIAL FOREIGN TRAVEL, COMMITTEE ON FOREIGN AFFAIRS, HOUSE OF REPRESENTATIVES, EXPENDED BETWEEN  APR. 1 AND JUNE 30, 2011", [('M001169', 4.363636363636363), ('M001151', 4.0), ('M001111', 2.6666666666666665), ('C001081', 2.6666666666666665), ('H001034', 2.6285714285714286)]
+Reason: first one is right, second is another 'Murphy'
+
+Missing 2003q4nov21.txt: "Hon. Gregory Muujs","10/6/2003","10/10/2003","Kuwait-Iraq","", [('H001034', 2.6), ('M001137', 2.4000000000000004), ('G000550', 2.2857142857142856), ('G000445', 2.2857142857142856), ('G000377', 2.2857142857142856)]
+Reason: unclear, google suggests 'Gregory Meeks'?
+
+Inconcl. 2000q1feb29.txt: "Hon. Sandford","12/4/2000","12/7/2000","New Zealand","REPORT OF EXPENDITURES FOR OFFICIAL FOREIGN TRAVEL, HOUSE DELEGATION TO JAPAN, AUSTRALIA, AND NEW ZEALAND, HOUSE OF REPRESENTATIVES, EXPENDED BETWEEN NOV. 27 AND DEC. 7, 1999", [('S000051', 3.5), ('H000789', 3.2), ('S000059', 2.5), ('S000033', 2.5), ('H000712', 2.0)]
+Reason: unclear
+
+Missing 2005q2apr06.txt: "Hon. Charles Stenholm","5/13/2005","5/16/2005","Mexico","REPORT OF EXPENDITURES FOR OFFICIAL FOREIGN TRAVEL, DELEGATION TO MEXICO-U.S. INTERPARLIAMENTARY GROUP, HOUSE OF REPRESENTATIVES, EXPENDED BETWEEN JAN. 1 AND DEC. 31, 2004", [('S000770', 2.5), ('C001058', 2.5), ('H001034', 2.4), ('C000059', 2.3357142857142854), ('C000286', 2.3222222222222224)]
+Reason: not legislator at time of travel
+
+Missing 2005q2apr06.txt: "Hon. Amo Houghton","06/17/2005","06/21/2005","","REPORT OF EXPENDITURES FOR OFFICIAL FOREIGN TRAVEL, DELEGATION TO CANADA-U.S. INTERPARLIAMENTARY GROUP, HOUSE OF REPRESENTATIVES, EXPENDED BETWEEN JAN. 1 AND DEC. 31, 2004", [('H001034', 2.4), ('H001016', 2.2222222222222223), ('H000712', 2.0), ('H000666', 2.0), ('H000948', 2.0)]
+Reason: not legislator at time of travel
+
+Inconcl. 2005q2apr06.txt: "Hon. Nick Smith","06/17/2005","06/21/2005","","REPORT OF EXPENDITURES FOR OFFICIAL FOREIGN TRAVEL, DELEGATION TO CANADA-U.S. INTERPARLIAMENTARY GROUP, HOUSE OF REPRESENTATIVES, EXPENDED BETWEEN JAN. 1 AND DEC. 31, 2004", [('S000522', 4.133333333333334), ('S001142', 4.133333333333334), ('S000510', 4.0), ('S000583', 4.0), ('H001034', 2.4)]
+Reason: not legislator at time of travel
+
+Missing 2005q2apr06.txt: "Hon. Doug Bereuter","11/30/2005","12/05/2005","Bulgaria, Romania,","REPORT OF EXPENDITURES FOR OFFICIAL FOREIGN TRAVEL, DELEGATION TO THE NATO PARLIAMENTARY ASSEMBLY, HOUSE OF REPRESENTATIVES, EXPENDED BETWEEN JAN. 1 AND DEC. 31, 2004", [('H001034', 2.4), ('H000666', 2.25), ('D000432', 2.2), ('D000601', 2.1333333333333333), ('H001032', 2.1)]
+Reason: not legislator at time of travel
+
+ERROR 2004q3jul14.txt: ['Hon. John M. Sprat', 'Jr', '6/4/2004'], invalid literal for int() with base 10: 'Jr'
+
+Inconcl. 2004q3jul14.txt: "Hon. King","6/4/2004","6/5/2004","England","REPORT OF EXPENDITURES FOR OFFICIAL FOREIGN TRAVEL, DELEGATION TO ENGLAND AND FRANCE, HOUSE OF REPRESENTATIVES, EXPENDED BETWEEN JUNE 3 AND JUNE 9, 2004", [('K000362', 4.0), ('K000210', 4.0), ('K000188', 3.0), ('H001034', 2.4), ('K000363', 2.4)]
+Reason: not clear which one
+
+ERROR 2004q3jul14.txt: ['Hon. John M. Sprat', 'Jr', '6/5/2004'], invalid literal for int() with base 10: 'Jr'
+
+Missing 2005q1mar10.txt: "Hon. Jennifer Dunn","8/7/2005","8/9/2005","Ireland","REPORT OF EXPENDITURES FOR OFFICIAL FOREIGN TRAVEL, SELECT COMMITTEE ON HOMELAND SECURITY, HOUSE OF REPRESENTATIVES, EXPENDED BETWEEN JULY 1 AND SEPT. 30, 2004", [('D000533', 2.9166666666666665), ('H001034', 2.4), ('H000666', 2.25), ('J000070', 2.2222222222222223), ('H001032', 2.1)]
+Reason: not legislator at time of travel
+
+Missing 2005q1mar10.txt: "Hon. John D. Chapla","10/20/2005","10/21/2005","France","REPORT OF EXPENDITURES FOR OFFICIAL FOREIGN TRAVEL, COMMITTEE ON ARMED SERVICES, HOUSE OF REPRESENTATIVES, EXPENDED BETWEEN OCT. 1 AND DEC. 31, 2004", [('H001034', 2.4), ('J000255', 2.4), ('C001040', 2.4), ('J000284', 2.4), ('C000880', 2.4)]
+Reason: staff
+
+ERROR 2005q1mar10.txt: ['Hon. Ney', '12/9//2005', '12/10/2005'], invalid literal for int() with base 10: ''
+ERROR 2005q1mar10.txt: ['Hon. Robert E. (Bud) Cramer', '18/09/2005', '8/14/2005'], list index out of range
+
+Inconcl. 2008q4dec10.txt: "Hon. Green","7/3/2008","7/4/2008","Cyprus","REPORT OF EXPENDITURES FOR OFFICIAL FOREIGN TRAVEL, COMMITTEE ON FOREIGN AFFAIRS, HOUSE OF REPRESENTATIVES, EXPENDED BETWEEN JULY 1 AND  SEPT. 30, 2008", [('G000410', 4.0), ('G000553', 4.0), ('H001034', 2.4), ('G000445', 2.4), ('H000666', 2.0)]
+Reason: not clear which one
+
+Inconcl. 2008q4dec10.txt: "Hon. Smith (NJ)","8/19/2008","8/23/2008","Georgia","REPORT OF EXPENDITURES FOR OFFICIAL FOREIGN TRAVEL, COMMITTEE ON FOREIGN AFFAIRS, HOUSE OF REPRESENTATIVES, EXPENDED BETWEEN JULY 1 AND  SEPT. 30, 2008", [('S000522', 4.133333333333334), ('S001142', 4.133333333333334), ('S000510', 4.0), ('S000583', 4.0), ('S001172', 4.0)]
+Reason: didn't know to use state information
+
+ERROR 2008q4dec10.txt: ['Hon. Henry Cuellar', '*7/4/2008', '7/5/2008'], invalid literal for int() with base 10: '*7'
+
+Missing 2009q4nov19.txt: "Hon. John Blazey","7/1/2009","7/3/2009","Tunisia","REPORT OF EXPENDITURES FOR OFFICIAL FOREIGN TRAVEL, COMMITTEE ON APPROPRIATIONS, HOUSE OF REPRESENTATIVES, EXPENDED BETWEEN JULY 1  AND SEPT. 30, 2009", [('J000288', 2.7857142857142856), ('B001259', 2.6666666666666665), ('J000255', 2.466666666666667), ('H001034', 2.4), ('J000126', 2.4)]
+Reason: staff
+
+Inconcl. 1997q3sep23.txt: "Hon. Marlene Kaufmann","7/5/1997","7/8/1997","Poland","", [('H000789', 3.0), ('M000090', 2.857142857142857), ('M000087', 2.857142857142857), ('M000206', 2.5), ('M000133', 2.2857142857142856)]
+Reason: staff
+
+Inconcl. 1997q3sep23.txt: "Hon. Erika Schlager","7/5/1997","7/8/1997","Poland","", [('H000789', 3.3), ('S000112', 3.0), ('S000109', 3.0), ('S000480', 2.6666666666666665), ('S000148', 2.58)]
+Reason: staff
+
+Inconcl. 1997q3sep23.txt: "Hon. Mark Gage","7/5/1997","7/8/1997","Poland","", [('H000789', 3.0), ('M000019', 3.0), ('M000133', 2.6666666666666665), ('G000377', 2.2857142857142856), ('G000041', 2.0)]
+Reason: staff
+
+ERROR 1998q2may19.txt: ['Hon. Jesse Jackso', 'Jr', '1/17/1998'], invalid literal for int() with base 10: 'Jr'
+ERROR 1998q2may19.txt: ['Hon. Jesse Jackso', 'Jr', '1/19/1998'], invalid literal for int() with base 10: 'Jr'
+ERROR 1998q2may19.txt: ['Hon. Jesse Jackso', 'Jr', '1/21/1998'], invalid literal for int() with base 10: 'Jr'
+ERROR 1998q2may19.txt: ['Hon. Jesse Jackso', 'Jr', '1/22/1998'], invalid literal for int() with base 10: 'Jr'
+ERROR 1998q2may19.txt: ['Hon. John M. Sprat', 'Jr', '12/30/1998'], invalid literal for int() with base 10: 'Jr'
+ERROR 1998q2may19.txt: ['Hon. John M. Sprat', 'Jr', '12/31/1998'], invalid literal for int() with base 10: 'Jr'
+ERROR 1998q2may19.txt: ['Hon. John M. Sprat', 'Jr', '12/31/1998'], invalid literal for int() with base 10: 'Jr'
+
+Missing 2014q1jan21.txt: "Hon. Mel Watt","12/10/2014","12/11/2014","South Africa","REPORT OF EXPENDITURES FOR OFFICIAL FOREIGN TRAVEL, DELEGATION TO SOUTH AFRICA, EXPENDED BETWEEN DEC. 9 AND DEC. 11, 2013", [('H001034', 2.9), ('H001042', 2.3200000000000003), ('W000187', 2.2666666666666666), ('H001067', 2.0), ('H001061', 2.0)]
+Reason: not legislator at time of travel
+
+ERROR 2012q4nov27.txt: ['Hon. Bill Shuster', '30/2012', '7/2/2012'], not enough values to unpack (expected 3, got 2)
+ERROR 2012q4nov27.txt: ['Hon. Bill Shuster', '2/2012', '7/4/2012'], not enough values to unpack (expected 3, got 2)
+ERROR 2012q4nov27.txt: ['Hon. Bill Shuster', '4/2012', '7/4/2012'], not enough values to unpack (expected 3, got 2)
+ERROR 2012q4nov27.txt: ['Hon. Bill Shuster', '4/2012', '7/5/2012'], not enough values to unpack (expected 3, got 2)
+ERROR 2012q4nov27.txt: ['Hon. Bill Shuster', '5/2012', '7/6/2012'], not enough values to unpack (expected 3, got 2)
+ERROR 2012q4nov27.txt: ['Hon. Duncan Hunter', '30/2012', '7/2/2012'], not enough values to unpack (expected 3, got 2)
+ERROR 2012q4nov27.txt: ['Hon. Duncan Hunter', '2/2012', '7/4/2012'], not enough values to unpack (expected 3, got 2)
+ERROR 2012q4nov27.txt: ['Hon. Duncan Hunter', '4/2012', '7/4/2012'], not enough values to unpack (expected 3, got 2)
+ERROR 2012q4nov27.txt: ['Hon. Duncan Hunter', '4/2012', '7/5/2012'], not enough values to unpack (expected 3, got 2)
+ERROR 2012q4nov27.txt: ['Hon. Duncan Hunter', '5/2012', '7/6/2012'], not enough values to unpack (expected 3, got 2)
+ERROR 2012q4nov27.txt: ['Hon. Joe Wilson', '7/2012', '8/9/2012'], not enough values to unpack (expected 3, got 2)
+ERROR 2012q4nov27.txt: ['Hon. Joe Wilson', '9/2012', '8/10/2012'], not enough values to unpack (expected 3, got 2)
+ERROR 2012q4nov27.txt: ['Hon. Madeleine Bordallo', '7/2012', '8/9/2012'], not enough values to unpack (expected 3, got 2)
+ERROR 2012q4nov27.txt: ['Hon. Madeleine Bordallo', '9/2012', '8/10/2012'], not enough values to unpack (expected 3, got 2)
+ERROR 2012q4nov27.txt: ['Hon. Doug Lamborn', '4/2012', '9/5/2012'], not enough values to unpack (expected 3, got 2)
+ERROR 2012q4nov27.txt: ['Hon. Doug Lamborn', '5/2012', '9/5/2012'], not enough values to unpack (expected 3, got 2)
+ERROR 2012q4nov27.txt: ['Hon. Doug Lamborn', '5/2012', '9/7/2012'], not enough values to unpack (expected 3, got 2)
+ERROR 2012q4nov27.txt: ['Hon. Doug Lamborn', '7/2012', '9/8/2012'], not enough values to unpack (expected 3, got 2)
+ERROR 2012q4nov27.txt: ['Hon. Doug Lamborn', '8/2012', '9/10/2012'], not enough values to unpack (expected 3, got 2)
+ERROR 2003q2apr07.txt: ['Hon. Amory Houghto', 'Jr', '1/12/2003'], invalid literal for int() with base 10: 'Jr'
+ERROR 2003q2apr07.txt: ['Hon. Bill Pascrel', 'Jr', '1/12/2003'], invalid literal for int() with base 10: 'Jr'
+ERROR 2003q2apr07.txt: ['Hon. Rick Bouche', 'M.C', '2/15/2003'], invalid literal for int() with base 10: 'M.C'
+ERROR 2003q2apr07.txt: ['Hon. Rick Bouche', 'M.C', '2/18/2003'], invalid literal for int() with base 10: 'M.C'
+ERROR 2003q2apr07.txt: ['Hon. Rick Bouche', 'M.C', '2/20/2003'], invalid literal for int() with base 10: 'M.C'
+
+Inconcl. 2003q2apr07.txt: "Hon. Dan Miller","5/16/2003","5/20/2003","United States","", [('M001144', 4.0), ('M001154', 4.0), ('M000725', 4.0), ('M001150', 4.0), ('M001139', 4.0)]
+Reason: not legislator at time of travel
+
+ERROR 2001q1feb08.txt: ['Hon. Amory Houghto', 'Jr', '11/27/2001'], invalid literal for int() with base 10: 'Jr'
+ERROR 2001q1feb08.txt: ['Hon. Amory Houghto', 'Jr', '12/1/2001'], invalid literal for int() with base 10: 'Jr'
+ERROR 2001q1feb08.txt: ['Hon. Floyd D. Spence', '22/11/2001', '24/11/2001'], list index out of range
+ERROR 2001q1feb08.txt: ['Hon. Floyd D. Spence', '24/11/2001', '28/11/2001'], list index out of range
+ERROR 2001q1feb08.txt: ['Hon. Floyd D. Spence', '28/11/2001', '30/11/2001'], list index out of range
+ERROR 2001q1feb08.txt: ['Hon. Floyd D. Spence', '30/11/2001', '2/12/2001'], list index out of range
+ERROR 2001q1feb08.txt: ['Hon. Solomon P. Ortiz', '22/11/2001', '24/11/2001'], list index out of range
+ERROR 2001q1feb08.txt: ['Hon. Solomon P. Ortiz', '24/11/2001', '28/11/2001'], list index out of range
+ERROR 2001q1feb08.txt: ['Hon. Solomon P. Ortiz', '28/11/2001', '30/11/2001'], list index out of range
+ERROR 2001q1feb08.txt: ['Hon. Solomon P. Ortiz', '30/11/2001', '2/12/2001'], list index out of range
+ERROR 2001q1feb08.txt: ['Hon. John M. McHugh', '22/11/2001', '24/11/2001'], list index out of range
+ERROR 2001q1feb08.txt: ['Hon. John M. McHugh', '24/11/2001', '28/11/2001'], list index out of range
+ERROR 2001q1feb08.txt: ['Hon. John M. McHugh', '28/11/2001', '30/11/2001'], list index out of range
+ERROR 2001q1feb08.txt: ['Hon. John M. McHugh', '30/11/2001', '1/12/2001'], list index out of range
+ERROR 2001q1feb08.txt: ['Hon. Silvestre Reyes', '22/11/2001', '24/11/2001'], list index out of range
+ERROR 2001q1feb08.txt: ['Hon. Silvestre Reyes', '24/11/2001', '28/11/2001'], list index out of range
+ERROR 2001q1feb08.txt: ['Hon. Silvestre Reyes', '28/11/2001', '30/11/2001'], list index out of range
+ERROR 2001q1feb08.txt: ['Hon. Silvestre Reyes', '30/11/2001', '2/12/2001'], list index out of range
+ERROR 2001q1feb08.txt: ['Hon. Ellen O. Tauscher', '27/11/2001', '29/11/2001'], list index out of range
+ERROR 2001q1feb08.txt: ['Hon. Ellen O. Tauscher', '29/11/2001', '1/12/2001'], list index out of range
+ERROR 2001q1feb08.txt: ['Hon. Amory Houghto', 'Jr', '11/27/2001'], invalid literal for int() with base 10: 'Jr'
+ERROR 2001q1feb08.txt: ['Hon. Amory Houghto', 'Jr', '12/1/2001'], invalid literal for int() with base 10: 'Jr'
+
+Inconcl. 2002q4oct15.txt: "Hon. Charlie Johnson","9/8/2002","9/10/2002","Canada","", [('J000177', 4.0), ('J000285', 4.0), ('J000174', 4.0), ('J000163', 4.0), ('J000126', 4.0)]
+Reason: unclear
+
+Missing 2015q3sep08.txt: "Hon. Catherine Sendak","5/4/2015","5/7/2015","Guatemala","REPORT OF EXPENDITURES FOR OFFICIAL FOREIGN TRAVEL, COMMITTEE ON ARMED SERVICES, HOUSE OF REPRESENTATIVES, EXPENDED BETWEEN APR. 1 AND JUNE 30, 2015", [('H001034', 2.4), ('C000141', 2.2222222222222223), ('C001103', 2.2222222222222223), ('C001083', 2.2222222222222223), ('C001051', 2.2222222222222223)]
+Reason: staff
+
+ERROR 2000q2may08.txt: ['Hon. Amo Houghto', 'Chairman', '5/20/2000'], invalid literal for int() with base 10: 'Chairman'
+
+Inconcl. 2000q2may08.txt: "Hon. Clay Shaw","5/20/2000","5/24/2000","Canada","REPORT OF EXPENDITURES FOR OFFICIAL FOREIGN TRAVEL, CANADA-UNITED STATES INTERPARLIAMENTARY GROUP, HOUSE OF REPRESENTATIVES, EXPENDED BETWEEN JAN. 1 AND DEC. 31, 1999", [('S000303', 4.4), ('C000488', 4.05), ('H000789', 3.2285714285714286), ('S001144', 2.606060606060606), ('S001147', 2.4)]
+Reason: first one is correct, second is "William Clay"
+
+ERROR 2000q2may08.txt: ['Hon. Jim Kolb', 'Chairman', '6/25/2000'], invalid literal for int() with base 10: 'Chairman'
+ERROR 2000q2may08.txt: ['Hon. Benjamin A. Gilma', 'Vice Chairman', '6/25/2000'], invalid literal for int() with base 10: 'Vice Chairman'
+
+The following dates are not of the format m/d/y
+ERROR 2015q2apr27.txt: ['Hon. Rob Wittman', '21/11/2015', '24/11/2015'], list index out of range
+ERROR 2015q2apr27.txt: ['Hon. Rob Wittman', '22/11/2015', '23/11/2015'], list index out of range
+ERROR 2015q2apr27.txt: ['Hon. Rob Wittman', '23/11/2015', '24/11/2015'], list index out of range
+ERROR 2015q2apr27.txt: ['Hon. Madeleine Bordallo', '21/11/2015', '24/11/2015'], list index out of range
+ERROR 2015q2apr27.txt: ['Hon. Madeleine Bordallo', '22/11/2015', '23/11/2015'], list index out of range
+ERROR 2015q2apr27.txt: ['Hon. Madeleine Bordallo', '23/11/2015', '24/11/2015'], list index out of range
+ERROR 2015q2apr27.txt: ['Hon. Mike Coffman', '21/11/2015', '24/11/2015'], list index out of range
+ERROR 2015q2apr27.txt: ['Hon. Mike Coffman', '22/11/2015', '23/11/2015'], list index out of range
+ERROR 2015q2apr27.txt: ['Hon. Mike Coffman', '23/11/2015', '24/11/2015'], list index out of range
+ERROR 2015q2apr27.txt: ['Hon. David Loebsack', '21/11/2015', '24/11/2015'], list index out of range
+ERROR 2015q2apr27.txt: ['Hon. David Loebsack', '22/11/2015', '23/11/2015'], list index out of range
+ERROR 2015q2apr27.txt: ['Hon. David Loebsack', '23/11/2015', '24/11/2015'], list index out of range
+ERROR 2015q2apr27.txt: ['Hon. Mike Rogers', '14/12/2015', '14/12/2015'], list index out of range
+ERROR 2015q2apr27.txt: ['Hon. Mike Rogers', '15/12/2015', '17/12/2015'], list index out of range
+ERROR 2015q2apr27.txt: ['Hon. Madeleine Bordallo', '14/12/2015', '14/12/2015'], list index out of range
+ERROR 2015q2apr27.txt: ['Hon. Madeleine Bordallo', '15/12/2015', '17/12/2015'], list index out of range
+ERROR 2015q2apr27.txt: ['Hon. Michael Turner', '14/12/2015', '14/12/2015'], list index out of range
+ERROR 2015q2apr27.txt: ['Hon. Michael Turner', '15/12/2015', '17/12/2015'], list index out of range
+ERROR 2015q2apr27.txt: ['Hon. Rick Larsen', '14/12/2015', '14/12/2015'], list index out of range
+ERROR 2015q2apr27.txt: ['Hon. Rick Larsen', '15/12/2015', '17/12/2015'], list index out of range
+ERROR 2002q2may14.txt: ['Hon. Bud Cramer', '\\ 12//2002', '12/31/2002'], invalid literal for int() with base 10: '\\ 12'
+ERROR 2002q2may14.txt: ['Hon. Bud Cramer', '\\ 12//2002', '1/3/2002'], invalid literal for int() with base 10: '\\ 12'
+ERROR 2002q2may14.txt: ['Hon. Todd Tiahrt', '\\ 12//2002', '1/2/2002'], invalid literal for int() with base 10: '\\ 12'
+
+Missing 2015q1feb20.txt: "Hon. Jack Kingston","10/7/2015","10/8/2015","Greece","REPORT OF EXPENDITURES FOR OFFICIAL FOREIGN TRAVEL, COMMITTEE ON APPROPRIATIONS, HOUSE OF REPRESENTATIVES,PEXPENDED BETWEEN OCT. 1 AND DEC. 31, 2014", [('H001034', 2.4), ('H001063', 2.4), ('H001061', 2.2), ('H001042', 2.05), ('K000362', 2.0)]
+Reason: not legislator at time of travel
+
+Inconcl. 1996q3sep11.txt: "Hon. Bill Inglee","3/3/1996","3/4/1996","Hungary","REPORT OF EXPENDITURES FOR OFFICIAL FOREIGN TRAVEL, DELEGATION TO ITALY, BOSNIA, CROATIA AND HUNGARY, HOUSE OF REPRESENTATIVES, EXPENDED BETWEEN FEB. 29 AND MAR. 4, 1996", [('H000789', 3.0), ('I000023', 2.8666666666666667), ('B000431', 2.6666666666666665), ('B000617', 2.605714285714286), ('H000448', 2.333333333333333)]
+Reason: staff
+
+ERROR 2002q3sep10.txt: ['Hon. Robert E. Crame', 'Jr', '3/23/2002'], invalid literal for int() with base 10: 'Jr'
+ERROR 2002q3sep10.txt: ['Hon. Robert E. Crame', 'Jr', '3/24/2002'], invalid literal for int() with base 10: 'Jr'
+ERROR 2002q3sep10.txt: ['Hon. Robert E. Crame', 'Jr', '3/26/2002'], invalid literal for int() with base 10: 'Jr'
+ERROR 2002q3sep10.txt: ['Hon. Robert E. Crame', 'Jr', '3/28/2002'], invalid literal for int() with base 10: 'Jr'
+ERROR 2002q3sep10.txt: ['Hon. Robert E. Crame', 'Jr', '4/3/2002'], invalid literal for int() with base 10: 'Jr'
+ERROR 2002q3sep10.txt: ['Hon. Robert E. Crame', 'Jr', '4/5/2002'], invalid literal for int() with base 10: 'Jr'
+ERROR 2002q3sep10.txt: ['Hon. Robert E. Crame', 'Jr', '4/7/2002'], invalid literal for int() with base 10: 'Jr'
+ERROR 2002q3sep10.txt: ['Hon. Neil Abercrombie', '\\ 1/4/2002', '4/9/2002'], invalid literal for int() with base 10: '\\ 1'
+ERROR 2002q3sep10.txt: ['Hon. Ken Calvert', '\\1/4/2002', '4/9/2002'], invalid literal for int() with base 10: '\\1'
+ERROR 2002q3sep10.txt: ['Hon. John M. Sprat', 'Jr', '5/25/2002'], invalid literal for int() with base 10: 'Jr'
+ERROR 2002q3sep10.txt: ['Hon. John M. Sprat', 'Jr', '5/30/2002'], invalid literal for int() with base 10: 'Jr'
+ERROR 2002q3sep10.txt: ['Hon. Chris Knaue', 'Minority', '4/10/2002'], invalid literal for int() with base 10: 'Minority'
+ERROR 2002q3sep10.txt: ['Hon. Ray Shepher', 'Majority', '4/10/2002'], invalid literal for int() with base 10: 'Majority'
+ERROR 2002q3sep10.txt: ['Hon. Jim Kolb', 'Chairman', '5/16/2002'], invalid literal for int() with base 10: 'Chairman'
+
+Missing 2011q1feb16.txt: "Hon. William D. Delahunt","10/13/2011","10/15/2011","Belarus","REPORT OF EXPENDITURES FOR OFFICIAL FOREIGN TRAVEL, COMMITTEE ON FOREIGN AFFAIRS, HOUSE OF REPRESENTATIVES, EXPENDED BETWEEN OCT. 1 AND DEC. 31, 2010", [('D000216', 2.5), ('H001034', 2.4), ('H001032', 2.4), ('D000604', 2.057142857142857), ('D000595', 2.057142857142857)]
+Reason: not legislator at time of travel
+
+ERROR 2009q1feb11.txt: ['Hon. Charles W. Boustan', 'Jr', '11/30/2009'], invalid literal for int() with base 10: 'Jr'
+ERROR 2009q1feb11.txt: ['Hon. Charles W. Boustan', 'Jr', '12/1/2009'], invalid literal for int() with base 10: 'Jr'
+ERROR 2009q1feb11.txt: ['Hon. Charles W. Boustan', 'Jr', '12/4/2009'], invalid literal for int() with base 10: 'Jr'
+ERROR 2009q1feb11.txt: ['Hon. Charles W. Boustan', 'Jr', '12/5/2009'], invalid literal for int() with base 10: 'Jr'
+
+Missing 2009q1feb11.txt: "Hon. Ellen Tauscher","12/17/2009","12/18/2009","Czech Republic","REPORT OF EXPENDITURES FOR OFFICIAL FOREIGN TRAVEL, COMMITTEE ON ARMED SERVICES, HOUSE OF REPRESENTATIVES, EXPENDED BETWEEN OCT. 1  AND DEC. 31, 2008", [('H001034', 2.4), ('E000288', 2.2857142857142856), ('T000466', 2.16), ('H000712', 2.1), ('T000260', 2.0)]
+Reason: not legislator at time of travel
+
+ERROR 2009q1feb11.txt: ['Hon. Robert W. DeGrass', 'Jr', '12/12/2009'], invalid literal for int() with base 10: 'Jr'
+ERROR 2009q1feb11.txt: ['Hon. Robert W. DeGrass', 'Jr', '12/14/2009'], invalid literal for int() with base 10: 'Jr'
+ERROR 2009q1feb11.txt: ['Hon. Robert W. DeGrass', 'Jr', '12/16/2009'], invalid literal for int() with base 10: 'Jr'
+ERROR 2009q1feb11.txt: ['Hon. Robert W. DeGrass', 'Jr', '12/17/2009'], invalid literal for int() with base 10: 'Jr'
+ERROR 2009q1feb11.txt: ['Hon. Ackerman', '12//2009', '12/2009'], invalid literal for int() with base 10: ''
+ERROR 2009q1feb11.txt: ['Hon. Ackerman', '12//2009', '12/2009'], invalid literal for int() with base 10: ''
+ERROR 2009q1feb11.txt: ['Hon. Ackerman', '12//2009', '12/2009'], invalid literal for int() with base 10: ''
+ERROR 2009q1feb11.txt: ['Hon. Berman', '10//2009', '10/2009'], invalid literal for int() with base 10: ''
+ERROR 2009q1feb11.txt: ['Hon. Berman', '12//2009', '12/2009'], invalid literal for int() with base 10: ''
+ERROR 2009q1feb11.txt: ['Hon. Burton', '11/2009', '1/2009'], not enough values to unpack (expected 3, got 2)
+ERROR 2009q1feb11.txt: ['Hon. Burton', '11/2009', '11/2009'], not enough values to unpack (expected 3, got 2)
+ERROR 2009q1feb11.txt: ['Hon. Burton', '11//2009', '11/2009'], invalid literal for int() with base 10: ''
+ERROR 2009q1feb11.txt: ['Hon. Carnahan', '9//2009', '1/2009'], invalid literal for int() with base 10: ''
+ERROR 2009q1feb11.txt: ['Hon. Carnahan', '10/2009', '1/2009'], not enough values to unpack (expected 3, got 2)
+ERROR 2009q1feb11.txt: ['Hon. Delahunt', '11//2009', '1/2009'], invalid literal for int() with base 10: ''
+ERROR 2009q1feb11.txt: ['Hon. Delahunt', '12/2009', '12/2009'], not enough values to unpack (expected 3, got 2)
+ERROR 2009q1feb11.txt: ['Hon. Delahunt', '12/2009', '12/2009'], not enough values to unpack (expected 3, got 2)
+ERROR 2009q1feb11.txt: ['Hon. Engel', '11/2009', '1/2009'], not enough values to unpack (expected 3, got 2)
+ERROR 2009q1feb11.txt: ['Hon. Engel', '11/2009', '11/2009'], not enough values to unpack (expected 3, got 2)
+ERROR 2009q1feb11.txt: ['Hon. Engel', '11//2009', '11/2009'], invalid literal for int() with base 10: ''
+ERROR 2009q1feb11.txt: ['Hon. Faleomavaega', '12/2009', '12/2009'], not enough values to unpack (expected 3, got 2)
+ERROR 2009q1feb11.txt: ['Hon. Faleomavaega', '12//2009', '12/2009'], invalid literal for int() with base 10: ''
+ERROR 2009q1feb11.txt: ['Hon. Faleomavaega', '12/2009', '12/2009'], not enough values to unpack (expected 3, got 2)
+ERROR 2009q1feb11.txt: ['Hon. Flake', '12//2009', '12/2009'], invalid literal for int() with base 10: ''
+ERROR 2009q1feb11.txt: ['Hon. Flake', '12//2009', '12/2009'], invalid literal for int() with base 10: ''
+ERROR 2009q1feb11.txt: ['Hon. Flake', '12//2009', '12/2009'], invalid literal for int() with base 10: ''
+ERROR 2009q1feb11.txt: ['Hon. Hinojosa', '12//2009', '12/2009'], invalid literal for int() with base 10: ''
+ERROR 2009q1feb11.txt: ['Hon. Hinojosa', '12//2009', '12/2009'], invalid literal for int() with base 10: ''
+ERROR 2009q1feb11.txt: ['Hon. Hinojosa', '12//2009', '12/2009'], invalid literal for int() with base 10: ''
+ERROR 2009q1feb11.txt: ['Hon. Klein', '11//2009', '11/2009'], invalid literal for int() with base 10: ''
+ERROR 2009q1feb11.txt: ['Hon. Klein', '12//2009', '12/2009'], invalid literal for int() with base 10: ''
+ERROR 2009q1feb11.txt: ['Hon. Klein', '12//2009', '12/2009'], invalid literal for int() with base 10: ''
+ERROR 2009q1feb11.txt: ['Hon. Klein', '12//2009', '12/2009'], invalid literal for int() with base 10: ''
+ERROR 2009q1feb11.txt: ['Hon. Meeks', '11/2009', '11/2009'], not enough values to unpack (expected 3, got 2)
+ERROR 2009q1feb11.txt: ['Hon. Meeks', '12//2009', '12/2009'], invalid literal for int() with base 10: ''
+ERROR 2009q1feb11.txt: ['Hon. Meeks', '12//2009', '12/2009'], invalid literal for int() with base 10: ''
+ERROR 2009q1feb11.txt: ['Hon. Meeks', '12//2009', '12/2009'], invalid literal for int() with base 10: ''
+ERROR 2009q1feb11.txt: ['Hon. Miller', '11/2009', '1/2009'], not enough values to unpack (expected 3, got 2)
+ERROR 2009q1feb11.txt: ['Hon. Miller', '11/2009', '11/2009'], not enough values to unpack (expected 3, got 2)
+ERROR 2009q1feb11.txt: ['Hon. Miller', '11//2009', '11/2009'], invalid literal for int() with base 10: ''
+ERROR 2009q1feb11.txt: ['Hon. Poe', '11/2009', '1/2009'], not enough values to unpack (expected 3, got 2)
+ERROR 2009q1feb11.txt: ['Hon. Poe', '11/2009', '1/2009'], not enough values to unpack (expected 3, got 2)
+ERROR 2009q1feb11.txt: ['Hon. Poe', '11/2009', '1/2009'], not enough values to unpack (expected 3, got 2)
+ERROR 2009q1feb11.txt: ['Hon. Poe', '12//2009', '12/2009'], invalid literal for int() with base 10: ''
+ERROR 2009q1feb11.txt: ['Hon. Poe', '12//2009', '12/2009'], invalid literal for int() with base 10: ''
+ERROR 2009q1feb11.txt: ['Hon. Poe', '12//2009', '12/2009'], invalid literal for int() with base 10: ''
+ERROR 2009q1feb11.txt: ['Hon. Rohrabacher', '12/2009', '1/2009'], not enough values to unpack (expected 3, got 2)
+ERROR 2009q1feb11.txt: ['Hon. Rohrabacher', '12/2009', '12/2009'], not enough values to unpack (expected 3, got 2)
+ERROR 2009q1feb11.txt: ['Hon. Rohrabacher', '12/2009', '12/2009'], not enough values to unpack (expected 3, got 2)
+ERROR 2009q1feb11.txt: ['Hon. Sires', '11//2009', '11/2009'], invalid literal for int() with base 10: ''
+ERROR 2009q1feb11.txt: ['Hon. Smith (NJ)', '12/2009', '1/2009'], not enough values to unpack (expected 3, got 2)
+ERROR 2009q1feb11.txt: ['Hon. Wexler', '11//2009', '11/2009'], invalid literal for int() with base 10: ''
+ERROR 2009q1feb11.txt: ['Hon. Wexler', '11//2009', '11/2009'], invalid literal for int() with base 10: ''
+ERROR 2009q1feb11.txt: ['Hon. Wexler', '11//2009', '11/2009'], invalid literal for int() with base 10: ''
+ERROR 2009q1feb11.txt: ['Hon. Wexler', '12/2009', '1/2009'], not enough values to unpack (expected 3, got 2)
+ERROR 2009q1feb11.txt: ['Hon. Wexler', '12/2009', '1/2009'], not enough values to unpack (expected 3, got 2)
+ERROR 2009q1feb11.txt: ['Hon. Wexler', '12/2009', '1/2009'], not enough values to unpack (expected 3, got 2)
+ERROR 2009q1feb11.txt: ['Hon. Wilson', '12//2009', '12/2009'], invalid literal for int() with base 10: ''
+ERROR 2009q1feb11.txt: ['Hon. Wilson', '12//2009', '12/2009'], invalid literal for int() with base 10: ''
+ERROR 2009q1feb11.txt: ['Hon. Wilson', '12//2009', '12/2009'], invalid literal for int() with base 10: ''
+ERROR 2009q1feb11.txt: ['Hon. Woolsey', '11//2009', '11/2009'], invalid literal for int() with base 10: ''
+
+Missing 2009q1feb11.txt: "Hon. Bud Cramer","10/1/2009","10/13/2009","Europe","(AMENDED) REPORT OF EXPENDITURES FOR OFFICIAL FOREIGN TRAVEL, PERMANENT SELECT COMMITTEE ON INTELLIGENCE, HOUSE OF REPRESENTATIVES, EXPENDED BETWEEN  OCT. 1 AND DEC. 31, 2008", [('C001071', 2.933333333333333), ('C000174', 2.6666666666666665), ('C001051', 2.6666666666666665), ('H001034', 2.4), ('C001070', 2.3333333333333335)]
+Reason: not legislator at time of travel
+
