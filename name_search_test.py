@@ -19,9 +19,11 @@ def search_many(src_dir, log_file_name):
         with open('names_index.pickle','wb') as f:
             pickle.dump((charset, members_list, members_dict, members_index), f)
 
+    count = 0
     with open(log_file_name, 'w') as logfile:
         for src_file_name in os.listdir(src_dir):
-            print(src_file_name)
+            count += 1
+            print(count, src_file_name)
             src_file_path = src_dir + src_file_name
             for line in scraper.process_a_file(src_file_path):
                 t = [s[1:-1] for s in line.split(',')[:3]]

@@ -1,29 +1,12 @@
 """
-* these are probably names with the most commas
-  * Hon. John R. Kuhl, Jr., CODEL led by
-  * Pearre, Robert H., Jr
-* there are also nicknames in ``''
-* 30579  Revised figures for Hon. George
-* 44600                -Hon. Todd Tiahrt
-* sometimes Hon, or Hon instead of Hon
-df.loc[(df['name'].notnull()) & (df['name'].str.contains('Hon')) & (df['name'].str.startswith('Hon.')==0)]
-* 36449              Hon C.W. Bill Young, the official name is first:C., mid:W. Bill, last: Young
-* in official last names, max number of words seems to be 3
-* currently some dates are not parsed correctly
-pd.to_datetime(df['arrival_date'], errors='coerce').isnull()
-1408                        Hon. Dave Reichert    2/29/2007       2/9/2007   
-* how to map names like first:John middle: Alexander, III, last: McMillan
-* JoAnn Emerson vs. Jo Ann Emerson
-* known issue with removing '-': Hon. Jackson-Lee, returns Jesse L. Jackson Jr. as top
-
+Data source:
 https://raw.githubusercontent.com/unitedstates/congress-legislators/master/legislators-current.yaml
 https://raw.githubusercontent.com/unitedstates/congress-legislators/master/legislators-historical.yaml
 ? https://raw.githubusercontent.com/unitedstates/congress-legislators/master/executive.yaml
 
 TODO
-use python-levenshtein package
-filter by initials
 consecutive parts of names
+optimization in name_match to cut down search space when some fields are empty
 """
 
 import yaml
@@ -105,7 +88,7 @@ def append_data(members_index, members_list):
          value: dict key: bioguide \
                    value: (first, mid, last, suffix, nickname, \
                            first_lower, mid_lower, last_lower, suffix_lower, nickname_lower)
-    names converted to lower-case, special symbol removed, to make search easier
+    names converted to lower-case, accents removed, other symbols removed
     """
     for member in members_list:
         firstname, middlename, lastname, suffix, nickname = \
@@ -209,12 +192,10 @@ def search_by_name(name, arrival_date, departure_date, \
         members_index, charset = None, return_length = 5):
     """
     dates are assumed to be in m/d/yyyy format, and arrival<=departure
-    the algorithm does the following preprocessing:
-    1. convert name to lower case, same for charset if not None
-    2. if charset is not None then first remove all char not in charset before the search
+    the algorithm first converts the name to lower case and filters characters,
     then the algorithm checks every month between arrival and departure, and each consecutive
     sequence of up to word_count words to see if there is a matching last name
-    returns a list of bioguide-id of all lastname in members_index that appears in name
+    returns a list of bioguide-id and scores sorted by score 
     """
     name = unicodedata.normalize('NFKD',name.lower()).encode('ascii','ignore').decode()
     name = re.sub(r' +', ' ', name)
