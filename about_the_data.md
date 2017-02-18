@@ -21,6 +21,6 @@ _From Derek Willis of ProPublica:_
 
 >Caveats: in some cases, the destination is a continent, not a country. This usually happens for trips paid for by the Intelligence Committee. Lawmakers are typically identified by the prefix "Hon" before their names. There could be amended reports, meaning substantially duplicative information would occur. To the extent we can identify those cases, we want to retain the most recent report.
 
-Cleaning this data is an ongoing process. The output of `scraper.py` is stored on our [data.world page](https://data.world/data4democracy/propublica-foreign-travel) or can be read in using [this link](https://query.data.world/s/9a8mas5oqrayibt2i30wznwug). 
+The script to clean this data is an ongoing process.  [`scraper_report_text.py`](https://github.com/Data4Democracy/official-foreign-travel/blob/master/scraper_report_text.py) pulls down the text files from the server.  [`scraper.py`](https://github.com/Data4Democracy/official-foreign-travel/blob/master/scraper.py) cleans and outputs the data, which is stored on our [data.world page](https://data.world/data4democracy/propublica-foreign-travel) or can be read in using [this link](https://query.data.world/s/9a8mas5oqrayibt2i30wznwug). 
 
 To keep things consistent, please use links to our data.world page in your scripts whenever possible.
