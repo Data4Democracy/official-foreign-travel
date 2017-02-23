@@ -8,7 +8,7 @@ import pickle
 
 def search_many(src_dir, log_file_name):
     """Writes all of the reports from src_dir into output_filename"""
-    pkl = True
+    pkl = os.path.isfile('names_index.pickle')
     if pkl:
         with open('names_index.pickle','rb') as f:
             charset, members_list, members_dict, members_index = \
@@ -26,10 +26,10 @@ def search_many(src_dir, log_file_name):
             print(count, src_file_name)
             src_file_path = src_dir + src_file_name
             for line in scraper.process_a_file(src_file_path):
-                t = [s[1:-1] for s in line.split(',')[:3]]
+                t = [s[1:-1] for s in line.split(',')[:4]]
                 try:
                     if (t[0].startswith('Hon')) or (t[0].startswith('Speaker')):
-                        ret = name_search.search_by_name(t[0], t[1], t[2], \
+                        ret = name_search.search_by_name(t[0], t[2], t[3], \
                                 members_index, charset)
                         if ret[0][1] < 3:
                             print('Missing {0}: {1}, {2}'.format(src_file_name, line, ret), file=logfile)
